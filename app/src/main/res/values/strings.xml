@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">KotlinExample</string>
+
+    <string name="location_explanation">When the user is in proximity of this location you will be notified. If you want to change it please press the button below</string>
+    <string name="change_location">Change</string>
+
+    <string name="my_location">My location</string>
+    <string name="new_marker">New place</string>
+</resources>

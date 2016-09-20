@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "455509372645",
+    "firebase_url": "https://awareness-281fa.firebaseio.com",
+    "project_id": "awareness-281fa",
+    "storage_bucket": "awareness-281fa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455509372645:android:3ea04a0ad2cf9429",
+        "android_client_info": {
+          "package_name": "hive.com.paradiseoctopus.awareness"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "455509372645-mufikkm5v0co5u9bcvj6i10kvbnlh670.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hive.com.paradiseoctopus.awareness",
+            "certificate_hash": "23B2DA27C09B657C2431B8BA157167D030A7F398"
+          }
+        },
+        {
+          "client_id": "455509372645-dg5h8fblaj43j5p6vevivnitd1vd4m0e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0dqdZFAGJmgZ4Z22P355-BOoF2fZeP6E"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "455509372645-dg5h8fblaj43j5p6vevivnitd1vd4m0e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
