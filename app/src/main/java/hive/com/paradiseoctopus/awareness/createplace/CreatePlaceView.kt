@@ -95,6 +95,7 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
                     place ->
                         place.latitude = pickedPlace.latLng.latitude
                         place.longitude = pickedPlace.latLng.longitude
+                        place.name = pickedPlace.name.toString()
                 }
 
             }

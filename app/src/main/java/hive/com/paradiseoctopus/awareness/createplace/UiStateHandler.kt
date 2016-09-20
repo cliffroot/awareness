@@ -1,5 +1,7 @@
 package hive.com.paradiseoctopus.awareness.createplace
 
+import android.util.Log
+
 
 /**
  * Created by edanylenko on 9/20/16.
@@ -30,11 +32,13 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
         val latest : State? = history.last()
         history.add(allowedTransitions[latest]?.filter(predicate)?.single())
         val new : State? = history.last()
+        Log.e("NEW", "n : $new")
         onEnter(new, FragmentTranstion.FORWARD)
     }
 
     private fun onEnter(new: State?, transition : FragmentTranstion) {
         currentState = new
+        Log.e("NewState",  "$new <~")
         when (new) {
             UiStateHandler.State.PLACE_PICKER -> presenter.view?.showPlaceChooser(transition)
             UiStateHandler.State.DEVICE_PICKER -> presenter.view?.showDeviceChooser(transition)
