@@ -1,14 +1,11 @@
 package hive.com.paradiseoctopus.awareness.utils
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import rx.Observable
-import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
-import rx.subjects.Subject
 
 /**
  * Created by cliffroot on 14.09.16.
@@ -22,6 +19,7 @@ object PermissionUtility {
 
     fun requestPermission (host : AppCompatActivity, permissions : List<String>,
                            requestCode : Int) : Observable<Pair<Int, Boolean>> {
+
         val toRequest = permissions.filter {
             permission -> !checkPermission(host, permission)
         }

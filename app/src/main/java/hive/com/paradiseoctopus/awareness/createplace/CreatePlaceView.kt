@@ -3,11 +3,9 @@ package hive.com.paradiseoctopus.awareness.createplace
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
-
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
+import com.google.android.gms.location.places.Place
 import com.google.android.gms.location.places.ui.PlacePicker
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.fragment.DeviceChooserFragment
@@ -21,40 +19,39 @@ import hive.com.paradiseoctopus.awareness.createplace.fragment.PlaceChooserFragm
 class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
 
     val PRESENTER_TAG = "CreatePlacePresenter"
-    val presenter : CreatePlacePresenter by lazy {
-        CreatePlacePresenter(this)
-    }
-    var currentScreen : CurrentScreen = CurrentScreen.PLACE
+    var presenter : CreatePlacePresenter? = null
 
-    enum class CurrentScreen {
-        PLACE, DEVICE, ADDITIONAL
-    }
+    override fun showPlaceChooser(transition: FragmentTranstion) = replaceFragmentWithAnimation(PlaceChooserFragment(), PlaceChooserFragment::class.java.name, transition)
 
+    override fun showDeviceChooser(transition: FragmentTranstion) = replaceFragmentWithAnimation(DeviceChooserFragment(), DeviceChooserFragment::class.java.name, transition)
 
-    override fun showPlaceChooser() {
-        replaceFragmentWithAnimation(PlaceChooserFragment(), PlaceChooserFragment::class.java.name)
-    }
-
-    override fun showDeviceChooser() {
-        replaceFragmentWithAnimation(DeviceChooserFragment(), DeviceChooserFragment::class.java.name)
-    }
-
-    override fun showAdditionalSettings() {
+    override fun showAdditionalSettings(transition: FragmentTranstion) {
 
     }
 
-    override fun finishCreation() {
+    override fun finishCreation(backwards : Boolean) {
 
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.create_place_view)
+    }
 
-        supportFragmentManager.beginTransaction()
-            .add(presenter, PRESENTER_TAG)
-            .commitNow()
-        presenter.startCreation()
+    override fun onStart() {
+        super.onStart()
+
+        if (supportFragmentManager.findFragmentByTag(PRESENTER_TAG) == null) {
+            presenter = CreatePlacePresenter(this)
+            supportFragmentManager.beginTransaction()
+                    .add(presenter, PRESENTER_TAG)
+                    .commitNow()
+            presenter?.startCreation()
+        } else {
+            presenter = supportFragmentManager.findFragmentByTag(PRESENTER_TAG) as CreatePlacePresenter
+            presenter?.view = this
+            presenter?.restoreState()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -65,18 +62,24 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_next -> {
-                showDeviceChooser()
+                presenter?.next()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
     }
 
-    fun replaceFragmentWithAnimation(fragment: android.support.v4.app.Fragment, tag: String) {
+    fun replaceFragmentWithAnimation(fragment: android.support.v4.app.Fragment, tag: String, transition: FragmentTranstion) {
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.setCustomAnimations(
-                R.anim.from_right, R.anim.to_left,
-                R.anim.from_left, R.anim.to_right)
+        when (transition) {
+            FragmentTranstion.NONE -> {}
+            FragmentTranstion.FORWARD -> transaction.setCustomAnimations(
+                                            R.anim.from_right, R.anim.to_left,
+                                            R.anim.from_left, R.anim.to_right)
+            FragmentTranstion.BACKWARD -> transaction.setCustomAnimations(
+                                            R.anim.from_left, R.anim.to_right,
+                                            R.anim.from_right, R.anim.to_left)
+        }
         transaction.replace(R.id.create_place_fragment, fragment)
         transaction.addToBackStack(tag)
         transaction.commit()
@@ -85,10 +88,20 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode and 0xFF == PLACE_PICKER_REQUEST) {
             if (resultCode == RESULT_OK) {
+                val pickedPlace : Place = PlacePicker.getPlace(this, data)
                 (supportFragmentManager.findFragmentById(R.id.create_place_fragment)
-                    as PlaceChooserFragment).locationSubject.onNext(PlacePicker.getPlace(this, data))
+                    as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
+                presenter?.setCurrentPlace {
+                    place ->
+                        place.latitude = pickedPlace.latLng.latitude
+                        place.longitude = pickedPlace.latLng.longitude
+                }
 
             }
         }
+    }
+
+    override fun onBackPressed() {
+        presenter?.back()
     }
 }

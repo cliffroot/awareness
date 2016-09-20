@@ -12,7 +12,7 @@ import com.google.android.gms.location.places.ui.PlacePicker
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.MapView
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView
@@ -34,22 +34,33 @@ class PlaceChooserFragment : Fragment() {
 
         val v : View = inflater.inflate(R.layout.place_chooser_fragment, container, false)
 
-        loadMap(v, savedInstanceState)
-        setupPicker(v)
         return v
     }
 
-    fun loadMap(v: View, savedInstanceState: Bundle?) {
-        mapView = v.findViewById(R.id.current_location_snapshot) as MapView
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        Log.e("Overlay", "onActivityCreated")
+    }
+
+    override fun onViewCreated(v: View?, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.e("Overlay", "onViewCreated")
+        loadMap(v, savedInstanceState)
+        setupPicker(v)
+    }
+
+    fun loadMap(v: View?, savedInstanceState: Bundle?) {
+        mapView = v?.findViewById(R.id.current_location_snapshot) as MapView
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync {
-            map -> (activity as CreatePlaceView).presenter.getCurrentLocation()
-                .subscribe {
+            map -> (activity as CreatePlaceView).presenter?.getCurrentLocation()
+                ?.subscribe {
                     location ->
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                             LatLng(location.latitude, location.longitude), 13.5f))
-                    map.addMarker(MarkerOptions().position(LatLng(location.latitude, location.longitude))
+                    val marker : Marker = map.addMarker(MarkerOptions().position(LatLng(location.latitude, location.longitude))
                             .title(resources.getString(R.string.my_location)))
+                    marker.showInfoWindow()
                     map.uiSettings.setAllGesturesEnabled(false)
                 }
 
@@ -61,15 +72,16 @@ class PlaceChooserFragment : Fragment() {
                     map ->
                         map.clear()
                         map.moveCamera (CameraUpdateFactory.newLatLngZoom(place.latLng, 13.5f))
-                        map.addMarker(MarkerOptions().position(place.latLng)
+                        val marker : Marker = map.addMarker(MarkerOptions().position(place.latLng)
                                 .title( if (place.name == null)
                                     resources.getString(R.string.new_marker) else place.name.toString()))
+                        marker.showInfoWindow()
                 }
         }
     }
 
-    fun setupPicker(v : View) {
-        val changePlaceButton : Button = v.findViewById(R.id.change_location_button) as Button
+    fun setupPicker(v : View?) {
+        val changePlaceButton : Button = v?.findViewById(R.id.change_location_button) as Button
         changePlaceButton.setOnClickListener {
             view ->
                 val builder = PlacePicker.IntentBuilder()
