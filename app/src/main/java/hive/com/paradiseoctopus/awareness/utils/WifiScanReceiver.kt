@@ -6,13 +6,14 @@ import android.content.Intent
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import rx.subjects.PublishSubject
+import rx.subjects.ReplaySubject
 
 /**
  * Created by edanylenko on 9/20/16.
  */
 
 
-class WifiScanReceiver(val context : Context, val resultSubject : PublishSubject<List<ScanResult>>) : BroadcastReceiver() {
+class WifiScanReceiver(val context: Context, val resultSubject: ReplaySubject<List<ScanResult>>) : BroadcastReceiver() {
 
     val wifiScanManager : WifiManager by lazy {
         context.getSystemService(Context.WIFI_SERVICE) as WifiManager

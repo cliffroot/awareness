@@ -23,9 +23,11 @@ import rx.subjects.ReplaySubject
  *
  */
 
+val PLACE_NAME_EXTRA = "placeName"
+
 class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
                              CreatePlaceContracts.PlacePresenter  {
-    val TAG = "CreatePlacePresenter"
+    val TAG = "CreatePlacePresefdnter"
     var place: PlaceModel = PlaceModel()
 
     var selectedLocation : Location? = null
@@ -45,17 +47,9 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
         super.onCreate(savedState)
         client?.connect()
         retainInstance = true
-
-        Log.e("Overlay", "onCreate happened")
-    }
-
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        Log.e("Overlay", "attached")
     }
 
     override fun getCurrentLocation() : Observable<Location> {
-        Log.e("Overlay", "selectedLoc: " + selectedLocation)
         if (selectedLocation == null) {
             val o: ReplaySubject<Location> = ReplaySubject.create()
             return PermissionUtility.requestPermission(activity as AppCompatActivity,
@@ -118,11 +112,33 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
     }
 
     override fun getNearbyDevices() : Observable<List<ScanResult>> {
-        val publishSubject : PublishSubject<List<ScanResult>> = PublishSubject.create()
-        val wifiManager : WifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        context.registerReceiver(WifiScanReceiver(context, publishSubject), IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
-        wifiManager.startScan()
-        return publishSubject
+        Log.e("Overlay", "disc.net = $discoverableNetworks")
+        if (discoverableNetworks == null) {
+            val replaySubject: ReplaySubject<List<ScanResult>> = ReplaySubject.create()
+            return PermissionUtility.requestPermission(activity as AppCompatActivity,
+                    mutableListOf(android.Manifest.permission.ACCESS_WIFI_STATE, android.Manifest.permission.CHANGE_WIFI_STATE),
+                    PermissionUtility.REQUEST_WIFI_CODE)
+                    .filter { p -> p.first == PermissionUtility.REQUEST_WIFI_CODE }
+                    .flatMap {
+                        p ->
+                        if (p.second) { // [permission was granted
+                            val wifiManager: WifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                            context.registerReceiver(WifiScanReceiver(context, replaySubject), IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
+                            wifiManager.startScan()
+                            replaySubject.subscribe {
+                                result ->
+                                discoverableNetworks = result
+                            }
+                            replaySubject
+                        } else {
+                            replaySubject.onNext(mutableListOf())
+                            replaySubject.onCompleted()
+                            replaySubject
+                        }
+                    }
+        } else {
+            return ReplaySubject.just(discoverableNetworks)
+        }
     }
 
     override fun setCurrentPlace(placeUpdate: (PlaceModel) -> Unit) {
@@ -130,6 +146,11 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
         selectedLocation = Location("Snapshot")
         selectedLocation?.latitude = place.latitude as Double
         selectedLocation?.longitude = place.longitude as Double
+        if (selectedLocation?.extras == null) selectedLocation?.extras = {
+            val b: Bundle = Bundle()
+            b.putString(PLACE_NAME_EXTRA, place.name)
+            b
+        }() else selectedLocation?.extras?.putString(PLACE_NAME_EXTRA, place.name)
 
     }
 

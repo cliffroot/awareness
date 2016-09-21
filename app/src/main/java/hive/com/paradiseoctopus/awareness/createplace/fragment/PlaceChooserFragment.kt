@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView
+import hive.com.paradiseoctopus.awareness.createplace.PLACE_NAME_EXTRA
 import rx.subjects.PublishSubject
 
 /**
@@ -54,15 +55,19 @@ class PlaceChooserFragment : Fragment() {
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync {
             map -> (activity as CreatePlaceView).presenter?.getCurrentLocation()
-                ?.subscribe {
+                ?.subscribe ({
                     location ->
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                             LatLng(location.latitude, location.longitude), 13.5f))
                     val marker : Marker = map.addMarker(MarkerOptions().position(LatLng(location.latitude, location.longitude))
-                            .title(resources.getString(R.string.my_location)))
+                            .title(if (location.extras != null)
+                                    location.extras.getString(PLACE_NAME_EXTRA, resources.getString(R.string.my_location))
+                                    else resources.getString(R.string.my_location)))
                     marker.showInfoWindow()
                     map.uiSettings.setAllGesturesEnabled(false)
-                }
+                }, {
+                    error -> error.printStackTrace()
+                })
 
         }
 
