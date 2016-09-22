@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-     android:layout_width="match_parent"
-     android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?attr/selectableItemBackground"
+    android:layout_height="wrap_content">
 
     <ImageView
         android:layout_width="@dimen/recycler_icon_size"
@@ -18,5 +21,12 @@
         android:layout_toRightOf="@id/device_icon"
         android:padding="@dimen/layout_padding"
         />
+
+    <RadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/layout_padding"
+        android:id="@+id/selected_device"
+        android:layout_alignParentRight="true"/>
 
 </RelativeLayout>

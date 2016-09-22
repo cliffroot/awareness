@@ -6,4 +6,16 @@
 
     <string name="my_location">My location</string>
     <string name="new_marker">New place</string>
+    <string name="device_picker_explanation">You might choose one of the networks below, so that when the user\'s device is near that network you will be notified</string>
+    <string name="pick_a_name">Pick a name you want for this place</string>
+
+    <string name="use_time_interval">Use these time intervals</string>
+
+    <string name="default_time_from">9:00 PM</string>
+    <string name="default_time_to">1:00 AM</string>
+
+    <string name="place_code_explanation">This code will be used by other people to subscribe to this place</string>
+
+    <string name="next">Next</string>
+    <string name="finish">Finish</string>
 </resources>

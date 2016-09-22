@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/pick_a_name"
+        android:padding="@dimen/layout_padding"
+        android:id="@+id/place_name"
+        android:textSize="@dimen/medium_text"/>
+
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/use_intervals"
+        android:text="@string/use_time_interval"
+        android:padding="@dimen/layout_padding"
+        android:checked="false"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/layout_padding">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/from_time_picker"
+            android:enabled="false"
+            android:text="@string/default_time_from"
+            />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/to_time_picker"
+            android:padding="@dimen/layout_padding"
+            android:enabled="false"
+            android:text="@string/default_time_to"
+            />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/layout_padding"
+        android:textSize="@dimen/medium_text"
+        android:text="@string/place_code_explanation"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="@dimen/layout_padding"
+        android:textSize="@dimen/huge_text"
+        android:id="@+id/place_code"
+        android:text="UUID1432"
+        android:textStyle="bold"
+        />
+
+</LinearLayout>

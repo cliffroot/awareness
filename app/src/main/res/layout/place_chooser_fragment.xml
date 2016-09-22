@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="@dimen/layout_padding"
-    >
 
-    <TextView
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/location_explanation"
-        android:textSize="@dimen/medium_text"
-        />
-
-    <com.google.android.gms.maps.MapView
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:id="@+id/current_location_snapshot"
+        android:layout_height="match_parent"
+        android:padding="@dimen/layout_padding"
         >
-    </com.google.android.gms.maps.MapView>
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        style="@style/Widget.AppCompat.Button.Borderless.Colored"
-        android:text="@string/change_location"
-        android:id="@+id/change_location_button"
-        />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/location_explanation"
+            android:textSize="@dimen/medium_text"
+            />
 
-</LinearLayout>
+        <com.google.android.gms.maps.MapView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:id="@+id/current_location_snapshot"
+            >
+        </com.google.android.gms.maps.MapView>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:text="@string/change_location"
+            android:id="@+id/change_location_button"
+            />
+
+    </LinearLayout>

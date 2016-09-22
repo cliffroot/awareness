@@ -6,32 +6,34 @@ import android.location.Location
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.os.SystemClock
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.text.format.DateUtils
 import android.util.Log
 import com.google.android.gms.awareness.Awareness
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResultCallback
+import com.google.android.gms.maps.model.LatLng
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
 import hive.com.paradiseoctopus.awareness.utils.WifiScanReceiver
 import rx.Observable
-import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
+import java.util.*
 
 /**
  * Created by cliffroot on 14.09.16.
  *
  */
 
-val PLACE_NAME_EXTRA = "placeName"
-
-class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
-                             CreatePlaceContracts.PlacePresenter  {
-    val TAG = "CreatePlacePresefdnter"
+class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlaceContracts.PlacePresenter  {
+    val TAG = "CreatePlacePresenter"
     var place: PlaceModel = PlaceModel()
 
     var selectedLocation : Location? = null
     var discoverableNetworks : List<ScanResult>? = null
+    var selectedDevice : String? = null
+    var wifiScanReceiver : WifiScanReceiver? = null
 
     val client: GoogleApiClient? by lazy {
         GoogleApiClient.Builder(context).addApi(Awareness.API).build()
@@ -46,6 +48,12 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
         client?.connect()
+        if (savedState != null) {
+            place = savedState.getParcelable<PlaceModel>(PERSISTED_PLACE_MODEL_NAME)
+            nameRetrieved(place.name)
+            locationRetrieved(latLngToLocation(LatLng(place.latitude!!, place.longitude!!)))
+            deviceRetrieved(place.device!!)
+        }
         retainInstance = true
     }
 
@@ -95,24 +103,7 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
                 })
     }
 
-    override fun next() {
-        if (stateHandler.currentState != UiStateHandler.State.PLACE_PICKER) {
-            stateHandler.next { state -> true }
-        } else {
-            getNearbyDevices().isEmpty.subscribe{
-                empty ->
-                    if (empty) stateHandler.next { state -> state == UiStateHandler.State.OTHER_OPTIONS}
-                    else stateHandler.next { state -> state == UiStateHandler.State.DEVICE_PICKER }
-            }
-        }
-    }
-
-    override fun back() {
-        stateHandler.back()
-    }
-
     override fun getNearbyDevices() : Observable<List<ScanResult>> {
-        Log.e("Overlay", "disc.net = $discoverableNetworks")
         if (discoverableNetworks == null) {
             val replaySubject: ReplaySubject<List<ScanResult>> = ReplaySubject.create()
             return PermissionUtility.requestPermission(activity as AppCompatActivity,
@@ -123,7 +114,8 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
                         p ->
                         if (p.second) { // [permission was granted
                             val wifiManager: WifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                            context.registerReceiver(WifiScanReceiver(context, replaySubject), IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
+                            wifiScanReceiver = WifiScanReceiver(context, replaySubject)
+                            context.registerReceiver(wifiScanReceiver, IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
                             wifiManager.startScan()
                             replaySubject.subscribe {
                                 result ->
@@ -141,17 +133,31 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
         }
     }
 
-    override fun setCurrentPlace(placeUpdate: (PlaceModel) -> Unit) {
-        placeUpdate(place)
-        selectedLocation = Location("Snapshot")
-        selectedLocation?.latitude = place.latitude as Double
-        selectedLocation?.longitude = place.longitude as Double
-        if (selectedLocation?.extras == null) selectedLocation?.extras = {
-            val b: Bundle = Bundle()
-            b.putString(PLACE_NAME_EXTRA, place.name)
-            b
-        }() else selectedLocation?.extras?.putString(PLACE_NAME_EXTRA, place.name)
+    override fun onDetach() {
+        super.onDetach()
+        if (wifiScanReceiver != null)
+            context.unregisterReceiver(wifiScanReceiver)
+        wifiScanReceiver = null
+    }
 
+    override fun locationRetrieved(location: Location) {
+        selectedLocation = location
+        place.latitude = location.latitude
+        place.longitude = location.longitude
+    }
+
+    override fun nameRetrieved(name: String) {
+        place.name = name
+    }
+
+    override fun deviceRetrieved(ssid: String) {
+        selectedDevice = ssid
+        place.device = ssid
+    }
+
+    override fun intervalsRetrieved(from: Pair<Int, Int>, to: Pair<Int, Int>) {
+        place.intervalFrom = from.first * DateUtils.HOUR_IN_MILLIS + from.second * DateUtils.MINUTE_IN_MILLIS
+        place.intervalTo = to.first * DateUtils.MINUTE_IN_MILLIS + to.second * DateUtils.MINUTE_IN_MILLIS
     }
 
     override fun dismiss() {
@@ -162,9 +168,60 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(),
         stateHandler.next { state -> true }
     }
 
+    override fun generatePlaceCode(): String {
+        val code : String = UUID.randomUUID().toString().substring(IntRange(0, 8))
+        place.code = code
+        return code
+    }
+
+    override fun next() {
+        view?.progress(true)
+        if (stateHandler.currentState != UiStateHandler.State.PLACE_PICKER) {
+            stateHandler.next { state -> true }
+        } else {
+            getNearbyDevices().isEmpty.subscribe{
+                empty ->
+                if (empty) stateHandler.next { state -> state == UiStateHandler.State.OTHER_OPTIONS}
+                else stateHandler.next { state -> state == UiStateHandler.State.DEVICE_PICKER }
+            }
+        }
+
+        if (stateHandler.currentState == UiStateHandler.State.FINISH) {
+            saveModel()
+            Log.e("Overlay", "Model after creation: " + place)
+            stateHandler.finish()
+        }
+    }
+
+    fun saveModel() {
+        place.timestamp = SystemClock.currentThreadTimeMillis()
+        place.id = UUID.randomUUID().toString()
+    }
+
+    override fun back() {
+        view?.progress(true)
+        stateHandler.back()
+    }
+
     fun restoreState() {
+        view?.progress(true)
         stateHandler.restore()
     }
 
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.putParcelable(PERSISTED_PLACE_MODEL_NAME, place)
 
+    }
+
+}
+
+val PLACE_NAME_EXTRA = "placeName"
+val PERSISTED_PLACE_MODEL_NAME = "placeModelName"
+
+fun latLngToLocation (latLng: LatLng) :Location {
+    val location : Location = Location("Snapshot")
+    location.latitude = latLng.latitude
+    location.longitude = latLng.longitude
+    return location
 }

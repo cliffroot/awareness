@@ -1,16 +1,12 @@
 package hive.com.paradiseoctopus.awareness.createplace
 
-import android.util.Log
+import com.google.android.gms.maps.model.LatLng
 
 
 /**
  * Created by edanylenko on 9/20/16.
  */
 
-
-enum class FragmentTranstion {
-    NONE, FORWARD, BACKWARD
-}
 
 class UiStateHandler (val presenter: CreatePlacePresenter) {
 
@@ -32,20 +28,31 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
         val latest : State? = history.last()
         history.add(allowedTransitions[latest]?.filter(predicate)?.single())
         val new : State? = history.last()
-        Log.e("NEW", "n : $new")
         onEnter(new, FragmentTranstion.FORWARD)
     }
 
     private fun onEnter(new: State?, transition : FragmentTranstion) {
         currentState = new
-        Log.e("NewState",  "$new <~")
         when (new) {
-            UiStateHandler.State.PLACE_PICKER -> presenter.view?.showPlaceChooser(transition)
-            UiStateHandler.State.DEVICE_PICKER -> presenter.view?.showDeviceChooser(transition)
-            UiStateHandler.State.OTHER_OPTIONS -> presenter.view?.showAdditionalSettings(transition)
+            UiStateHandler.State.PLACE_PICKER -> presenter.getCurrentLocation().subscribe{
+                location -> presenter.view?.showPlaceChooser(transition, LatLng(location.latitude, location.longitude),
+                                presenter.place.name)
+            }
+
+            UiStateHandler.State.DEVICE_PICKER -> presenter.getNearbyDevices().subscribe{
+                devices -> presenter.view?.showDeviceChooser(transition, devices, presenter.selectedDevice)
+            }
+
+            UiStateHandler.State.OTHER_OPTIONS -> presenter.view?.showAdditionalSettings(transition,
+                    Pair(2,20), Pair(1,10), "someCode", presenter.place.name)
             UiStateHandler.State.DISMISS -> presenter.view?.finish()
-            UiStateHandler.State.FINISH -> presenter.view?.finish()
+            UiStateHandler.State.FINISH -> {}
         }
+        presenter.view?.progress(false)
+    }
+
+    fun finish() {
+        presenter.view?.finish()
     }
 
     fun back() {
@@ -56,5 +63,8 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
     fun restore() {
         onEnter(history.last(), FragmentTranstion.NONE)
     }
+}
 
+enum class FragmentTranstion {
+    NONE, FORWARD, BACKWARD
 }
