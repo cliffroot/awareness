@@ -19,10 +19,9 @@ import java.text.SimpleDateFormat
  * Created by edanylenko on 9/21/16.
  */
 
-class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : String? = "") : Fragment() {
-
-    var selectedFromTime : Pair<Int, Int> = Pair(21, 0)
-    var selectedToTime : Pair<Int, Int> = Pair(1,0)
+class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : String? = "",
+                                 var selectedFromTime : Pair<Int, Int> = Pair(0,0),
+                                 var selectedToTime   : Pair<Int, Int> = Pair(0,0)) : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -38,12 +37,18 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
                 (activity as CreatePlaceView).presenter?.nameRetrieved((view as TextView).text.toString())
             }
         }
+
+        (v.findViewById(R.id.use_intervals) as CheckBox).isChecked = selectedFromTime != selectedToTime // interval is not an interval when A = B
+        fromIntervalButton.isEnabled = selectedFromTime != selectedToTime
+        toIntervalButton.isEnabled = selectedFromTime != selectedToTime
+
         (v.findViewById(R.id.use_intervals) as CheckBox).setOnCheckedChangeListener {
             checkbox, selected ->
                 fromIntervalButton.isEnabled = selected
                 toIntervalButton.isEnabled = selected
-                if (!selected) updateTime(null, null)
+                if (!selected) updateTime(Pair(0,0), Pair(0,0))
         }
+
 
         (v.findViewById(R.id.place_code) as TextView).text = deviceCode
 
@@ -52,8 +57,9 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
         return v
     }
 
-    fun setupFromPicker(button : Button) =
-            button.setOnClickListener {
+    fun setupFromPicker(button : Button) {
+        button.text = time24to12(selectedFromTime.first, selectedFromTime.second)
+        button.setOnClickListener {
             view ->
             TimePickerDialog(context,
                     TimePickerDialog.OnTimeSetListener {
@@ -63,10 +69,12 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
                         updateTime(selectedFromTime, selectedToTime)
                     },
                     selectedFromTime.first, selectedFromTime.second, false).show() // TODO : use 24h format to be moved to resources
+        }
     }
 
-    fun setupToPicker (button : Button) =
-            button.setOnClickListener {
+    fun setupToPicker (button : Button) {
+        button.text = time24to12(selectedToTime.first, selectedToTime.second)
+        button.setOnClickListener {
             view ->
             TimePickerDialog(context,
                     TimePickerDialog.OnTimeSetListener {
@@ -75,18 +83,12 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
                         selectedToTime = Pair(hours, minutes)
                         updateTime(selectedFromTime, selectedToTime)
                     },
-                selectedToTime.first, selectedToTime.second, false).show()
+                    selectedToTime.first, selectedToTime.second, false).show()
+        }
     }
 
-    fun updateTime(from : Pair<Int, Int>? , to : Pair <Int, Int>?) {
-        (activity as CreatePlaceView).presenter?.intervalsRetrieved(from!!, to!!)
-//        (activity as CreatePlaceView).presenter?.setCurrentPlace {
-//            place ->
-//                place.intervalFrom = -1
-//                place.intervalTo = -1
-//                place.intervalFrom = from?.first?.times(DateUtils.HOUR_IN_MILLIS)?.plus(from?.second?.times(DateUtils.MINUTE_IN_MILLIS))
-//                place.intervalTo = to?.first?.times(DateUtils.HOUR_IN_MILLIS)?.plus(to?.second?.times(DateUtils.MINUTE_IN_MILLIS))
-//        }
+    fun updateTime(from : Pair<Int, Int> , to : Pair <Int, Int>) {
+        (activity as CreatePlaceView).presenter?.intervalsRetrieved(from, to)
     }
 
     fun time24to12 (hours : Int, minutes : Int) : String{
@@ -94,7 +96,7 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
         val f1 = SimpleDateFormat("HH:mm:ss")
         val d = f1.parse(s)
         val f2 = SimpleDateFormat("h:mma")
-        return f2.format(d).toLowerCase() // "12:18am"
+        return f2.format(d).toLowerCase()
     }
 
 }

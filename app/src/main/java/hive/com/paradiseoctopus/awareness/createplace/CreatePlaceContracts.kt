@@ -21,10 +21,10 @@ interface CreatePlaceContracts {
     }
 
     interface PlacePresenter {
-        fun getCurrentLocation() : Observable<Location>
+        fun getCurrentLocation() : Observable<LatLng>
         fun getNearbyDevices() : Observable<List<ScanResult>>
 
-        fun locationRetrieved(location: Location)
+        fun locationRetrieved(latLng: LatLng)
         fun nameRetrieved(name: String)
         fun deviceRetrieved(ssid: String)
         fun intervalsRetrieved(from : Pair<Int, Int>, to : Pair<Int, Int>)

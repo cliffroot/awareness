@@ -40,11 +40,15 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
             }
 
             UiStateHandler.State.DEVICE_PICKER -> presenter.getNearbyDevices().subscribe{
-                devices -> presenter.view?.showDeviceChooser(transition, devices, presenter.selectedDevice)
+                devices -> presenter.view?.showDeviceChooser(transition, devices,
+                    presenter.place.device)
             }
 
             UiStateHandler.State.OTHER_OPTIONS -> presenter.view?.showAdditionalSettings(transition,
-                    Pair(2,20), Pair(1,10), "someCode", presenter.place.name)
+                    timeMillisToHoursMinutesPair(presenter.place.intervalFrom),
+                    timeMillisToHoursMinutesPair(presenter.place.intervalTo),
+                    if (presenter.place.code == null) presenter.generatePlaceCode() else presenter.place.code!!,
+                    presenter.place.name)
             UiStateHandler.State.DISMISS -> presenter.view?.finish()
             UiStateHandler.State.FINISH -> {}
         }

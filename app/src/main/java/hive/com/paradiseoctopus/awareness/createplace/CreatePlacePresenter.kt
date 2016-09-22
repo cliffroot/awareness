@@ -30,9 +30,7 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
     val TAG = "CreatePlacePresenter"
     var place: PlaceModel = PlaceModel()
 
-    var selectedLocation : Location? = null
     var discoverableNetworks : List<ScanResult>? = null
-    var selectedDevice : String? = null
     var wifiScanReceiver : WifiScanReceiver? = null
 
     val client: GoogleApiClient? by lazy {
@@ -49,45 +47,41 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
         super.onCreate(savedState)
         client?.connect()
         if (savedState != null) {
-            place = savedState.getParcelable<PlaceModel>(PERSISTED_PLACE_MODEL_NAME)
-            nameRetrieved(place.name)
-            locationRetrieved(latLngToLocation(LatLng(place.latitude!!, place.longitude!!)))
-            deviceRetrieved(place.device!!)
+            place = savedState?.getParcelable<PlaceModel>(PERSISTED_PLACE_MODEL_NAME)
         }
         retainInstance = true
     }
 
-    override fun getCurrentLocation() : Observable<Location> {
-        if (selectedLocation == null) {
-            val o: ReplaySubject<Location> = ReplaySubject.create()
+    override fun getCurrentLocation() : Observable<LatLng> {
+        if (place.latitude == null && place.longitude == null) {
+            val locationSubject: ReplaySubject<LatLng> = ReplaySubject.create()
             return PermissionUtility.requestPermission(activity as AppCompatActivity,
                     mutableListOf(android.Manifest.permission.ACCESS_FINE_LOCATION), PermissionUtility.REQUEST_LOCATION_CODE)
-                    .filter { p -> p.first == PermissionUtility.REQUEST_LOCATION_CODE }
+                    .filter { pair -> pair.first == PermissionUtility.REQUEST_LOCATION_CODE }
                     .flatMap {
-                        p ->
-                        if (p.second) { // permission was granted
+                        pair ->
+                        if (pair.second) { // permission was granted
                             if (client?.isConnected == true) {
-                                queryAwarenessApi(o)
+                                queryAwarenessApi(locationSubject)
                             } else {
                                 client?.registerConnectionCallbacks(object : GoogleApiClient.ConnectionCallbacks {
-                                    override fun onConnectionSuspended(p0: Int) {
-                                    }
+                                    override fun onConnectionSuspended(p0: Int) { }
 
-                                    override fun onConnected(p0: Bundle?) = queryAwarenessApi(o)
+                                    override fun onConnected(p0: Bundle?) = queryAwarenessApi(locationSubject)
                                 })
                             }
                         } else {
-                            o.onNext(Location("NotGranted"))
-                            o.onCompleted()
+                            locationSubject.onNext(null)
+                            locationSubject.onCompleted()
                         }
-                        o
+                        locationSubject
                     }
         } else {
-            return ReplaySubject.just(selectedLocation)
+            return ReplaySubject.just(LatLng(place.latitude!!, place.longitude!!))
         }
     }
 
-    fun queryAwarenessApi(p : ReplaySubject<Location>) {
+    fun queryAwarenessApi(p : ReplaySubject<LatLng>) {
         Awareness.SnapshotApi.getLocation(client).setResultCallback(
                 ResultCallback<com.google.android.gms.awareness.snapshot.LocationResult>
                 { locationResult ->
@@ -96,9 +90,9 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
                         Log.e(TAG, "Could not get location." + locationResult.status)
                         return@ResultCallback
                     }
-                    selectedLocation = locationResult.location
-                    Log.e("Overlay", "selectedLocation: " + selectedLocation)
-                    p.onNext(locationResult.location)
+                    place.latitude = locationResult.location.latitude
+                    place.longitude = locationResult.location.longitude
+                    p.onNext(LatLng(place.latitude!!, place.longitude!!))
                     p.onCompleted()
                 })
     }
@@ -112,7 +106,7 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
                     .filter { p -> p.first == PermissionUtility.REQUEST_WIFI_CODE }
                     .flatMap {
                         p ->
-                        if (p.second) { // [permission was granted
+                        if (p.second) {
                             val wifiManager: WifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
                             wifiScanReceiver = WifiScanReceiver(context, replaySubject)
                             context.registerReceiver(wifiScanReceiver, IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
@@ -140,10 +134,9 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
         wifiScanReceiver = null
     }
 
-    override fun locationRetrieved(location: Location) {
-        selectedLocation = location
-        place.latitude = location.latitude
-        place.longitude = location.longitude
+    override fun locationRetrieved(latLng: LatLng) {
+        place.latitude = latLng.latitude
+        place.longitude = latLng.longitude
     }
 
     override fun nameRetrieved(name: String) {
@@ -151,13 +144,12 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
     }
 
     override fun deviceRetrieved(ssid: String) {
-        selectedDevice = ssid
-        place.device = ssid
+         place.device = ssid
     }
 
     override fun intervalsRetrieved(from: Pair<Int, Int>, to: Pair<Int, Int>) {
         place.intervalFrom = from.first * DateUtils.HOUR_IN_MILLIS + from.second * DateUtils.MINUTE_IN_MILLIS
-        place.intervalTo = to.first * DateUtils.MINUTE_IN_MILLIS + to.second * DateUtils.MINUTE_IN_MILLIS
+        place.intervalTo = to.first * DateUtils.HOUR_IN_MILLIS + to.second * DateUtils.MINUTE_IN_MILLIS
     }
 
     override fun dismiss() {
@@ -216,12 +208,9 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
 
 }
 
-val PLACE_NAME_EXTRA = "placeName"
 val PERSISTED_PLACE_MODEL_NAME = "placeModelName"
 
-fun latLngToLocation (latLng: LatLng) :Location {
-    val location : Location = Location("Snapshot")
-    location.latitude = latLng.latitude
-    location.longitude = latLng.longitude
-    return location
+fun timeMillisToHoursMinutesPair (millis : Long) :Pair<Int,Int> {
+    return Pair ( ((millis / DateUtils.MINUTE_IN_MILLIS) / 60).toInt(),
+                  ((millis / DateUtils.MINUTE_IN_MILLIS) % 60).toInt())
 }

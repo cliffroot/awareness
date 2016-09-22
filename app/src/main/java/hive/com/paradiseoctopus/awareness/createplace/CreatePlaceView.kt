@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.wifi.ScanResult
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -38,10 +39,10 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
 
     override fun showAdditionalSettings(transition: FragmentTranstion, intervalFrom: Pair<Int, Int>,
                                         intervalTo: Pair<Int, Int>, placeCode: String, placeName: String) {
+        Log.e("Overlay", "from: $intervalFrom, intervalTo : $intervalTo")
         replaceFragmentWithAnimation(
-                AdditionalSettingsFragment(placeName, placeCode, intervalFrom, intervalTo)
-                            if (presenter?.place?.code == null) presenter?.generatePlaceCode() else presenter?.place?.code),
-                AdditionalSettingsFragment::class.java.name, transition)
+                AdditionalSettingsFragment(placeName, placeCode, intervalFrom, intervalTo),
+                    AdditionalSettingsFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.finish)
 
     }
@@ -116,7 +117,7 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
                 (supportFragmentManager.findFragmentById(R.id.create_place_fragment)
                     as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
                 presenter?.nameRetrieved(pickedPlace.name.toString())
-                presenter?.locationRetrieved(latLngToLocation(pickedPlace.latLng))
+                presenter?.locationRetrieved(pickedPlace.latLng)
 
             }
         }
