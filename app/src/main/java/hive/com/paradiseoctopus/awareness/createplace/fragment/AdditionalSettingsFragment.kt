@@ -12,6 +12,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 import hive.com.paradiseoctopus.awareness.R
+import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceContracts
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView
 import java.text.SimpleDateFormat
 
@@ -19,7 +20,8 @@ import java.text.SimpleDateFormat
  * Created by edanylenko on 9/21/16.
  */
 
-class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : String? = "",
+class AdditionalSettingsFragment(val presenter : CreatePlaceContracts.PlacePresenter? = null,
+                                 val foundName : String? = "", val deviceCode : String? = "",
                                  var selectedFromTime : Pair<Int, Int> = Pair(0,0),
                                  var selectedToTime   : Pair<Int, Int> = Pair(0,0)) : Fragment() {
 
@@ -30,25 +32,27 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
         val fromIntervalButton : Button = v.findViewById(R.id.from_time_picker) as Button
         val toIntervalButton : Button = v.findViewById(R.id.to_time_picker) as Button
         val placeNameView : EditText = v.findViewById(R.id.place_name) as EditText
+        val intervalsEnabledView : CheckBox = v.findViewById(R.id.use_intervals) as CheckBox
 
         placeNameView.text = SpannableStringBuilder(foundName as String)
         placeNameView.setOnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus) {
-                (activity as CreatePlaceView).presenter?.nameRetrieved((view as TextView).text.toString())
-            }
+            if (!hasFocus) { presenter?.nameRetrieved((view as TextView).text.toString()) }
         }
 
-        (v.findViewById(R.id.use_intervals) as CheckBox).isChecked = selectedFromTime != selectedToTime // interval is not an interval when A = B
-        fromIntervalButton.isEnabled = selectedFromTime != selectedToTime
-        toIntervalButton.isEnabled = selectedFromTime != selectedToTime
+        val intervalEnabled = selectedFromTime != selectedToTime
+        with (intervalEnabled) {
+            fromIntervalButton.isEnabled = this
+            toIntervalButton.isEnabled = this
+            intervalsEnabledView.isChecked = this
+        }
 
-        (v.findViewById(R.id.use_intervals) as CheckBox).setOnCheckedChangeListener {
+
+        intervalsEnabledView.setOnCheckedChangeListener {
             checkbox, selected ->
                 fromIntervalButton.isEnabled = selected
                 toIntervalButton.isEnabled = selected
                 if (!selected) updateTime(Pair(0,0), Pair(0,0))
         }
-
 
         (v.findViewById(R.id.place_code) as TextView).text = deviceCode
 
@@ -60,24 +64,21 @@ class AdditionalSettingsFragment(val foundName : String? = "", val deviceCode : 
     fun setupFromPicker(button : Button) {
         button.text = time24to12(selectedFromTime.first, selectedFromTime.second)
         button.setOnClickListener {
-            view ->
-            TimePickerDialog(context,
-                    TimePickerDialog.OnTimeSetListener {
-                        timePicker, hours, minutes ->
-                        button.text = time24to12(hours, minutes)
-                        selectedFromTime = Pair(hours, minutes)
-                        updateTime(selectedFromTime, selectedToTime)
-                    },
-                    selectedFromTime.first, selectedFromTime.second, false).show() // TODO : use 24h format to be moved to resources
+            view -> TimePickerDialog(context,
+                        TimePickerDialog.OnTimeSetListener {
+                            timePicker, hours, minutes ->
+                            button.text = time24to12(hours, minutes)
+                            selectedFromTime = Pair(hours, minutes)
+                            updateTime(selectedFromTime, selectedToTime)
+                        },
+                        selectedFromTime.first, selectedFromTime.second, false).show() // TODO : use 24h format to be moved to resources
         }
     }
 
     fun setupToPicker (button : Button) {
         button.text = time24to12(selectedToTime.first, selectedToTime.second)
         button.setOnClickListener {
-            view ->
-            TimePickerDialog(context,
-                    TimePickerDialog.OnTimeSetListener {
+            view -> TimePickerDialog(context,TimePickerDialog.OnTimeSetListener {
                         timePicker, hours, minutes ->
                         button.text = time24to12(hours, minutes)
                         selectedToTime = Pair(hours, minutes)

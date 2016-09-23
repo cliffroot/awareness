@@ -17,5 +17,12 @@
     <string name="place_code_explanation">This code will be used by other people to subscribe to this place</string>
 
     <string name="next">Next</string>
+    <string name="cancel">Cancel</string>
+    <string name="are_you_sure">Are you sure?</string>
+    <string name="dismiss_new_place">New place won\'t be created, do you want to exit?</string>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
     <string name="finish">Finish</string>
 </resources>

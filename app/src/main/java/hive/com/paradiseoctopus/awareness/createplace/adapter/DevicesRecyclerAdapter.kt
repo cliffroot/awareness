@@ -1,4 +1,4 @@
-package hive.com.paradiseoctopus.awareness.createplace
+package hive.com.paradiseoctopus.awareness.createplace.adapter
 
 import android.content.Context
 import android.net.wifi.ScanResult

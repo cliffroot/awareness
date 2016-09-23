@@ -2,11 +2,9 @@ package hive.com.paradiseoctopus.awareness.createplace
 
 import android.content.Context
 import android.content.IntentFilter
-import android.location.Location
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
-import android.os.SystemClock
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.text.format.DateUtils
@@ -15,8 +13,9 @@ import com.google.android.gms.awareness.Awareness
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.maps.model.LatLng
+import hive.com.paradiseoctopus.awareness.createplace.helper.UiStateHandler
+import hive.com.paradiseoctopus.awareness.createplace.helper.WifiScanReceiver
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
-import hive.com.paradiseoctopus.awareness.utils.WifiScanReceiver
 import rx.Observable
 import rx.subjects.ReplaySubject
 import java.util.*
@@ -26,7 +25,7 @@ import java.util.*
  *
  */
 
-class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlaceContracts.PlacePresenter  {
+class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragment(), CreatePlaceContracts.PlacePresenter  {
     val TAG = "CreatePlacePresenter"
     var place: PlaceModel = PlaceModel()
 
@@ -42,6 +41,10 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
     }
 
     constructor() : this(null)
+
+    override fun provideView(placeView: CreatePlaceContracts.PlaceView) {
+        view = placeView
+    }
 
     override fun onCreate(savedState: Bundle?) {
         super.onCreate(savedState)
@@ -153,14 +156,14 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
     }
 
     override fun dismiss() {
-        throw UnsupportedOperationException("not implemented")
+        stateHandler.dismiss()
     }
 
     override fun startCreation() {
         stateHandler.next { state -> true }
     }
 
-    override fun generatePlaceCode(): String {
+    fun generatePlaceCode(): String {
         val code : String = UUID.randomUUID().toString().substring(IntRange(0, 8))
         place.code = code
         return code
@@ -186,8 +189,14 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
     }
 
     fun saveModel() {
-        place.timestamp = SystemClock.currentThreadTimeMillis()
+        place.timestamp = Calendar.getInstance().timeInMillis
         place.id = UUID.randomUUID().toString()
+
+       // val database = FirebaseDatabase.getInstance()
+       // val myRef = database.getReference("places").child(place.id)
+
+       // myRef.setValue(place)
+
     }
 
     override fun back() {
@@ -195,7 +204,7 @@ class CreatePlacePresenter(var view : CreatePlaceView?) : Fragment(), CreatePlac
         stateHandler.back()
     }
 
-    fun restoreState() {
+    override fun restoreState() {
         view?.progress(true)
         stateHandler.restore()
     }

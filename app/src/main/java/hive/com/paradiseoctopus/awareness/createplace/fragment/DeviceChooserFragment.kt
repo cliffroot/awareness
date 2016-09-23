@@ -10,15 +10,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import hive.com.paradiseoctopus.awareness.R
-import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView
-import hive.com.paradiseoctopus.awareness.createplace.DevicesRecyclerAdapter
+import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceContracts
+import hive.com.paradiseoctopus.awareness.createplace.adapter.DevicesRecyclerAdapter
 import rx.subjects.PublishSubject
 
 /**
  * Created by cliffroot on 15.09.16.
  */
 
-class DeviceChooserFragment(val devices: List<ScanResult>? = null, val selectedSsid: String? = null) : Fragment() {
+class DeviceChooserFragment(val presenter : CreatePlaceContracts.PlacePresenter? = null,
+                            val devices: List<ScanResult>? = null, val selectedSsid: String? = null) : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -36,14 +37,10 @@ class DeviceChooserFragment(val devices: List<ScanResult>? = null, val selectedS
 
         val filteredDevices = devices?.distinctBy {  device -> device.SSID }
         val observableSelectedDevice : PublishSubject<Int> = PublishSubject.create()
-        observableSelectedDevice.subscribe{ selected ->
-            (activity as CreatePlaceView).presenter?.deviceRetrieved(filteredDevices!![selected].SSID)
-        }
+        observableSelectedDevice.subscribe{ selected -> presenter?.deviceRetrieved(filteredDevices!![selected].SSID) }
 
-        recyclerView.adapter =
-                DevicesRecyclerAdapter(context, filteredDevices!!, observableSelectedDevice,
-                        filteredDevices.indexOfFirst
-                        { device -> device.SSID == selectedSsid })
+        recyclerView.adapter = DevicesRecyclerAdapter(context, filteredDevices!!, observableSelectedDevice,
+                            filteredDevices.indexOfFirst { device -> device.SSID == selectedSsid })
 
     }
 

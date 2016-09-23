@@ -1,4 +1,4 @@
-package hive.com.paradiseoctopus.awareness.utils
+package hive.com.paradiseoctopus.awareness.createplace.helper
 
 import android.content.BroadcastReceiver
 import android.content.Context

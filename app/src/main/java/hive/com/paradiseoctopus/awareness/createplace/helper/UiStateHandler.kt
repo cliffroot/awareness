@@ -1,6 +1,9 @@
-package hive.com.paradiseoctopus.awareness.createplace
+package hive.com.paradiseoctopus.awareness.createplace.helper
 
 import com.google.android.gms.maps.model.LatLng
+import hive.com.paradiseoctopus.awareness.createplace.CreatePlacePresenter
+import hive.com.paradiseoctopus.awareness.createplace.timeMillisToHoursMinutesPair
+import rx.subjects.PublishSubject
 
 
 /**
@@ -17,7 +20,7 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
     }
 
     val allowedTransitions : Map<State, Set<State>> =
-            mapOf(State.PLACE_PICKER  to setOf(State.DEVICE_PICKER, State.OTHER_OPTIONS),
+            mapOf(State.PLACE_PICKER to setOf(State.DEVICE_PICKER, State.OTHER_OPTIONS),
                   State.DEVICE_PICKER to setOf(State.OTHER_OPTIONS),
                   State.OTHER_OPTIONS to setOf(State.FINISH),
                   State.DISMISS to setOf(State.PLACE_PICKER))
@@ -31,26 +34,41 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
         onEnter(new, FragmentTranstion.FORWARD)
     }
 
+    fun dismiss() {
+        onEnter(State.DISMISS, FragmentTranstion.NONE)
+    }
+
     private fun onEnter(new: State?, transition : FragmentTranstion) {
+        val previousState = currentState
         currentState = new
         when (new) {
-            UiStateHandler.State.PLACE_PICKER -> presenter.getCurrentLocation().subscribe{
+            State.PLACE_PICKER -> presenter.getCurrentLocation().subscribe{
                 location -> presenter.view?.showPlaceChooser(transition, LatLng(location.latitude, location.longitude),
                                 presenter.place.name)
             }
 
-            UiStateHandler.State.DEVICE_PICKER -> presenter.getNearbyDevices().subscribe{
+            State.DEVICE_PICKER -> presenter.getNearbyDevices().subscribe{
                 devices -> presenter.view?.showDeviceChooser(transition, devices,
                     presenter.place.device)
             }
 
-            UiStateHandler.State.OTHER_OPTIONS -> presenter.view?.showAdditionalSettings(transition,
+            State.OTHER_OPTIONS -> presenter.view?.showAdditionalSettings(transition,
                     timeMillisToHoursMinutesPair(presenter.place.intervalFrom),
                     timeMillisToHoursMinutesPair(presenter.place.intervalTo),
                     if (presenter.place.code == null) presenter.generatePlaceCode() else presenter.place.code!!,
                     presenter.place.name)
-            UiStateHandler.State.DISMISS -> presenter.view?.finish()
-            UiStateHandler.State.FINISH -> {}
+            State.DISMISS -> {
+                val resultObservable : PublishSubject<Boolean> = PublishSubject.create()
+                resultObservable.filter { !it }.subscribe{
+                    if (currentState == new) { // if state hasn't changed rollback to previous
+                        onEnter(previousState, FragmentTranstion.NONE)
+                    } else { // otherwise go to current state
+                        onEnter(currentState, FragmentTranstion.NONE)
+                    }
+                }
+                presenter.view?.dismiss(resultObservable)
+            }
+            State.FINISH -> {}
         }
         presenter.view?.progress(false)
     }

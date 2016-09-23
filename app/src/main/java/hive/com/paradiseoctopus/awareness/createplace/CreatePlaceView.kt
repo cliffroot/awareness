@@ -3,8 +3,9 @@ package hive.com.paradiseoctopus.awareness.createplace
 import android.content.Intent
 import android.net.wifi.ScanResult
 import android.os.Bundle
+import android.support.v4.app.Fragment
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -16,15 +17,16 @@ import hive.com.paradiseoctopus.awareness.createplace.fragment.AdditionalSetting
 import hive.com.paradiseoctopus.awareness.createplace.fragment.DeviceChooserFragment
 import hive.com.paradiseoctopus.awareness.createplace.fragment.PLACE_PICKER_REQUEST
 import hive.com.paradiseoctopus.awareness.createplace.fragment.PlaceChooserFragment
+import hive.com.paradiseoctopus.awareness.createplace.helper.FragmentTranstion
+import rx.subjects.PublishSubject
 
 /**
  * Created by cliffroot on 14.09.16.
  */
 
 class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
-
     val PRESENTER_TAG = "CreatePlacePPresenter"
-    var presenter : CreatePlacePresenter? = null
+    var presenter : CreatePlaceContracts.PlacePresenter? = null
     var menuItemNext : MenuItem? = null
 
     override fun showPlaceChooser(transition: FragmentTranstion, location: LatLng, name: String) {
@@ -33,15 +35,14 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
     }
 
     override fun showDeviceChooser(transition: FragmentTranstion, savedNetwork: List<ScanResult>, selectedSsid: String?) {
-        replaceFragmentWithAnimation(DeviceChooserFragment(savedNetwork, selectedSsid), DeviceChooserFragment::class.java.name, transition)
+        replaceFragmentWithAnimation(DeviceChooserFragment(presenter, savedNetwork, selectedSsid), DeviceChooserFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.next)
     }
 
     override fun showAdditionalSettings(transition: FragmentTranstion, intervalFrom: Pair<Int, Int>,
                                         intervalTo: Pair<Int, Int>, placeCode: String, placeName: String) {
-        Log.e("Overlay", "from: $intervalFrom, intervalTo : $intervalTo")
         replaceFragmentWithAnimation(
-                AdditionalSettingsFragment(placeName, placeCode, intervalFrom, intervalTo),
+                AdditionalSettingsFragment(presenter, placeName, placeCode, intervalFrom, intervalTo),
                     AdditionalSettingsFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.finish)
 
@@ -50,11 +51,6 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
     override fun progress(running: Boolean) {
         findViewById(R.id.create_place_fragment).visibility = if (running) View.INVISIBLE else View.VISIBLE
         findViewById(R.id.progress_bar).visibility = if (running) View.VISIBLE else View.INVISIBLE
-    }
-
-
-    override fun finishCreation(backwards : Boolean) {
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,14 +64,30 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
         if (supportFragmentManager.findFragmentByTag(PRESENTER_TAG) == null) {
             presenter = CreatePlacePresenter(this)
             supportFragmentManager.beginTransaction()
-                    .add(presenter, PRESENTER_TAG)
+                    .add(presenter as Fragment, PRESENTER_TAG)
                     .commitNow()
             presenter?.startCreation()
         } else {
-            presenter = supportFragmentManager.findFragmentByTag(PRESENTER_TAG) as CreatePlacePresenter
-            presenter?.view = this
+            presenter = supportFragmentManager.findFragmentByTag(PRESENTER_TAG) as CreatePlaceContracts.PlacePresenter
+            presenter?.provideView(this)
             presenter?.restoreState()
         }
+    }
+
+    override fun dismiss(resultObservable : PublishSubject<Boolean>) {
+        AlertDialog.Builder(this).setTitle(R.string.are_you_sure)
+            .setMessage(R.string.dismiss_new_place)
+            .setPositiveButton(R.string.yes,
+                    { dialogInterface, i ->
+                        resultObservable.onNext(true)
+                        resultObservable.onCompleted()
+                        finish()})
+            .setNegativeButton(R.string.no,
+                    { dialogInterface, i ->
+                        resultObservable.onNext(false)
+                        resultObservable.onCompleted()
+                        dialogInterface.dismiss()})
+            .show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -88,6 +100,10 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
         when (item.itemId) {
             R.id.action_next -> {
                 presenter?.next()
+                return true
+            }
+            R.id.action_cancel -> {
+                presenter?.dismiss()
                 return true
             }
             else -> return super.onOptionsItemSelected(item)

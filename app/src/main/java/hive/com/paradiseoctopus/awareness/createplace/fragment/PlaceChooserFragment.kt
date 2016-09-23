@@ -2,7 +2,6 @@ package hive.com.paradiseoctopus.awareness.createplace.fragment
 
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,18 +37,15 @@ class PlaceChooserFragment(val location : LatLng? = null, val name : String? = n
 
     override fun onViewCreated(v: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.e("Overlay", "onViewCreated")
         loadMap(v, savedInstanceState)
         setupPicker(v)
     }
 
     fun loadMap(v: View?, savedInstanceState: Bundle?) {
-        Log.e("LoadMap", "loadMap <~ $location" + this.hashCode())
         mapView = v?.findViewById(R.id.current_location_snapshot) as MapView
         mapView?.onCreate(savedInstanceState)
         mapView?.getMapAsync {
             map ->
-                Log.e("onMapLoaded", "location: $location" + this@PlaceChooserFragment.hashCode())
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(location!!, 13.5f))
                 val marker : Marker = map.addMarker(MarkerOptions().position(location).title(name))
                 marker.showInfoWindow()
