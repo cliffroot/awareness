@@ -1,5 +1,6 @@
 package hive.com.paradiseoctopus.awareness.createplace
 
+import android.graphics.Bitmap
 import android.net.wifi.ScanResult
 import com.google.android.gms.maps.model.LatLng
 import hive.com.paradiseoctopus.awareness.createplace.helper.FragmentTranstion
@@ -17,6 +18,7 @@ interface CreatePlaceContracts {
         fun showDeviceChooser(transition: FragmentTranstion, savedNetwork : List<ScanResult>, selectedSsid : String?)
         fun showAdditionalSettings(transition: FragmentTranstion, intervalFrom : Pair<Int,Int>, intervalTo : Pair<Int, Int>,
                                    placeCode : String, placeName : String)
+
         fun progress(running : Boolean)
         fun dismiss(resultObservable : PublishSubject<Boolean>)
         fun finish()
@@ -32,6 +34,8 @@ interface CreatePlaceContracts {
         fun nameRetrieved(name: String)
         fun deviceRetrieved(ssid: String)
         fun intervalsRetrieved(from : Pair<Int, Int>, to : Pair<Int, Int>)
+
+        fun mapSnapshotRetrieved(bitmap : Bitmap)
 
         fun restoreState()
         fun startCreation()

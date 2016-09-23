@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import hive.com.paradiseoctopus.awareness.R
+import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceContracts
 import rx.subjects.PublishSubject
 
 /**
@@ -22,7 +23,8 @@ import rx.subjects.PublishSubject
 
 val PLACE_PICKER_REQUEST : Int = 13
 
-class PlaceChooserFragment(val location : LatLng? = null, val name : String? = null) : Fragment() {
+class PlaceChooserFragment(val presenter : CreatePlaceContracts.PlacePresenter? = null,
+                           val location : LatLng? = null, val name : String? = null) : Fragment() {
 
     var mapView : MapView? = null
     val locationSubject : PublishSubject<Place> = PublishSubject.create()
@@ -50,6 +52,8 @@ class PlaceChooserFragment(val location : LatLng? = null, val name : String? = n
                 val marker : Marker = map.addMarker(MarkerOptions().position(location).title(name))
                 marker.showInfoWindow()
                 map.uiSettings.setAllGesturesEnabled(false)
+
+                map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
         }
 
         locationSubject.subscribe {
@@ -62,6 +66,7 @@ class PlaceChooserFragment(val location : LatLng? = null, val name : String? = n
                                 .title( if (place.name == null)
                                     resources.getString(R.string.new_marker) else place.name.toString()))
                         marker.showInfoWindow()
+                        map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
                 }
         }
     }

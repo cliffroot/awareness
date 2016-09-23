@@ -25,12 +25,12 @@ import rx.subjects.PublishSubject
  */
 
 class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
-    val PRESENTER_TAG = "CreatePlacePPresenter"
+    val PRESENTER_TAG = "CreatePlacePresenter"
     var presenter : CreatePlaceContracts.PlacePresenter? = null
     var menuItemNext : MenuItem? = null
 
     override fun showPlaceChooser(transition: FragmentTranstion, location: LatLng, name: String) {
-        replaceFragmentWithAnimation(PlaceChooserFragment(location, name), PlaceChooserFragment::class.java.name, transition)
+        replaceFragmentWithAnimation(PlaceChooserFragment(presenter, location, name), PlaceChooserFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.next)
     }
 

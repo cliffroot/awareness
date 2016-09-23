@@ -2,6 +2,7 @@ package hive.com.paradiseoctopus.awareness.createplace
 
 import android.content.Context
 import android.content.IntentFilter
+import android.graphics.Bitmap
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
@@ -13,9 +14,12 @@ import com.google.android.gms.awareness.Awareness
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.FirebaseDatabase
+import hive.com.paradiseoctopus.awareness.createplace.helper.BitmapRepository
 import hive.com.paradiseoctopus.awareness.createplace.helper.UiStateHandler
 import hive.com.paradiseoctopus.awareness.createplace.helper.WifiScanReceiver
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
+import hive.com.paradiseoctopus.awareness.utils.UiUtils
 import rx.Observable
 import rx.subjects.ReplaySubject
 import java.util.*
@@ -155,6 +159,11 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
         place.intervalTo = to.first * DateUtils.HOUR_IN_MILLIS + to.second * DateUtils.MINUTE_IN_MILLIS
     }
 
+    override fun mapSnapshotRetrieved(bitmap: Bitmap) {
+        place.pathToMap = BitmapRepository.saveBitmap(context, BitmapRepository.cutBitmapCenter(
+                bitmap, UiUtils.dpToPx(context, 121), UiUtils.dpToPx(context, 121)))
+    }
+
     override fun dismiss() {
         stateHandler.dismiss()
     }
@@ -192,10 +201,10 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
         place.timestamp = Calendar.getInstance().timeInMillis
         place.id = UUID.randomUUID().toString()
 
-       // val database = FirebaseDatabase.getInstance()
-       // val myRef = database.getReference("places").child(place.id)
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("places").child(place.id)
 
-       // myRef.setValue(place)
+        myRef.setValue(place)
 
     }
 

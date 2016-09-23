@@ -2,7 +2,6 @@ package hive.com.paradiseoctopus.awareness.createplace
 
 import android.os.Parcel
 import android.os.Parcelable
-import android.text.format.DateUtils
 
 
 /**
@@ -10,12 +9,12 @@ import android.text.format.DateUtils
  */
 
 data class PlaceModel(var latitude : Double? = null, var longitude : Double? = null, var timestamp : Long = 0,
-                      var ownerId : String = "id",
+                      var ownerId : String = "id", var pathToMap : String = "id",
                       var intervalFrom : Long = 0, var intervalTo : Long = 0,
                       var device : String? = null, var code : String? = null,
                       var name : String = "", var id : String = "id") : Parcelable {
     constructor(source: Parcel):
-        this(source.readDouble(), source.readDouble(), source.readLong(), source.readString(), source.readLong(),
+        this(source.readDouble(), source.readDouble(), source.readLong(), source.readString(), source.readString(), source.readLong(),
                 source.readLong(), source.readString(), source.readString(), source.readString(), source.readString())
 
     override fun describeContents() = 0
@@ -25,6 +24,7 @@ data class PlaceModel(var latitude : Double? = null, var longitude : Double? = n
         dest?.writeDouble(longitude!!)
         dest?.writeLong(timestamp)
         dest?.writeString(ownerId)
+        dest?.writeString(pathToMap)
         dest?.writeLong(intervalFrom)
         dest?.writeLong(intervalTo)
         dest?.writeString(device)

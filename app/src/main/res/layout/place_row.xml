@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <ImageView
+        android:layout_width="121dp"
+        android:layout_height="121dp"
+        android:id="@+id/place_bitmap"
+        android:contentDescription="Place location"
+        android:layout_alignParentLeft="true"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/large_text"
+        android:text="Name"
+        android:id="@+id/place_name"
+        android:layout_toRightOf="@id/place_bitmap"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/medium_text"
+        android:text="Location"
+        android:layout_toRightOf="@id/place_bitmap"
+        android:layout_below="@id/place_name"
+        android:id="@+id/place_location"
+        />
+
+</RelativeLayout>
