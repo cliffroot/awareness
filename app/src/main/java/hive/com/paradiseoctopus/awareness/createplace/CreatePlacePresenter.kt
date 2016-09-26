@@ -54,7 +54,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
         super.onCreate(savedState)
         client?.connect()
         if (savedState != null) {
-            place = savedState?.getParcelable<PlaceModel>(PERSISTED_PLACE_MODEL_NAME)
+            place = savedState.getParcelable<PlaceModel>(PERSISTED_PLACE_MODEL_NAME)
         }
         retainInstance = true
     }
@@ -92,7 +92,6 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
         Awareness.SnapshotApi.getLocation(client).setResultCallback(
                 ResultCallback<com.google.android.gms.awareness.snapshot.LocationResult>
                 { locationResult ->
-                    Log.i(TAG, "loc: " + locationResult.status)
                     if (!locationResult.status.isSuccess) {
                         Log.e(TAG, "Could not get location." + locationResult.status)
                         return@ResultCallback
@@ -179,16 +178,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     }
 
     override fun next() {
-        view?.progress(true)
-        if (stateHandler.currentState != UiStateHandler.State.PLACE_PICKER) {
-            stateHandler.next { state -> true }
-        } else {
-            getNearbyDevices().isEmpty.subscribe{
-                empty ->
-                if (empty) stateHandler.next { state -> state == UiStateHandler.State.OTHER_OPTIONS}
-                else stateHandler.next { state -> state == UiStateHandler.State.DEVICE_PICKER }
-            }
-        }
+        stateHandler.next { state -> true }
 
         if (stateHandler.currentState == UiStateHandler.State.FINISH) {
             saveModel()
@@ -209,12 +199,10 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     }
 
     override fun back() {
-        view?.progress(true)
         stateHandler.back()
     }
 
     override fun restoreState() {
-        view?.progress(true)
         stateHandler.restore()
     }
 

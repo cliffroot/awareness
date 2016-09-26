@@ -20,8 +20,8 @@ data class PlaceModel(var latitude : Double? = null, var longitude : Double? = n
     override fun describeContents() = 0
 
     override fun writeToParcel(dest: Parcel?, flags: Int) {
-        dest?.writeDouble(latitude!!)
-        dest?.writeDouble(longitude!!)
+        dest?.writeDouble(if (latitude == null)  0.0 else latitude!!)
+        dest?.writeDouble(if (longitude == null) 0.0 else longitude!!)
         dest?.writeLong(timestamp)
         dest?.writeString(ownerId)
         dest?.writeString(pathToMap)

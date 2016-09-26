@@ -15,6 +15,10 @@
             android:textSize="@dimen/medium_text"
             />
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
         <com.google.android.gms.maps.MapView
             android:layout_width="match_parent"
             android:layout_height="300dp"
@@ -29,6 +33,17 @@
             style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:text="@string/change_location"
             android:id="@+id/change_location_button"
+            android:layout_below="@id/current_location_snapshot"
             />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progress_bar"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:indeterminate="true"/>
+
+    </RelativeLayout>
 
     </LinearLayout>

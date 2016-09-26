@@ -13,7 +13,7 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.google.firebase.database.FirebaseDatabase
-import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView
+import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView
 import hive.com.paradiseoctopus.awareness.createplace.PlaceModel
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
 import java.io.File
@@ -23,8 +23,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        startActivity(Intent(this, CreatePlaceView::class.java))
 
         val recycler : RecyclerView = findViewById(R.id.created_places) as RecyclerView
 
@@ -44,6 +42,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
         recycler.adapter = mAdapter
+
+        findViewById(R.id.add_place).setOnClickListener { startActivity(Intent(this, CreatePlaceWithPagerView::class.java)) }
     }
 
     class PlaceViewHolder(internal var mView: View) : RecyclerView.ViewHolder(mView) {

@@ -10,10 +10,25 @@
         android:padding="@dimen/layout_padding"
         android:textSize="@dimen/medium_text"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/devices_recycler_view"
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical" />
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/devices_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progress_bar"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:indeterminate="true"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

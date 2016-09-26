@@ -30,19 +30,19 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
     var menuItemNext : MenuItem? = null
 
     override fun showPlaceChooser(transition: FragmentTranstion, location: LatLng, name: String) {
-        replaceFragmentWithAnimation(PlaceChooserFragment(presenter, location, name), PlaceChooserFragment::class.java.name, transition)
+        replaceFragmentWithAnimation(PlaceChooserFragment(presenter, location, name).load(), PlaceChooserFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.next)
     }
 
     override fun showDeviceChooser(transition: FragmentTranstion, savedNetwork: List<ScanResult>, selectedSsid: String?) {
-        replaceFragmentWithAnimation(DeviceChooserFragment(presenter, savedNetwork, selectedSsid), DeviceChooserFragment::class.java.name, transition)
+        replaceFragmentWithAnimation(DeviceChooserFragment(presenter, savedNetwork, selectedSsid).load(), DeviceChooserFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.next)
     }
 
     override fun showAdditionalSettings(transition: FragmentTranstion, intervalFrom: Pair<Int, Int>,
                                         intervalTo: Pair<Int, Int>, placeCode: String, placeName: String) {
         replaceFragmentWithAnimation(
-                AdditionalSettingsFragment(presenter, placeName, placeCode, intervalFrom, intervalTo),
+                AdditionalSettingsFragment(presenter, placeName, placeCode, intervalFrom, intervalTo).load(),
                     AdditionalSettingsFragment::class.java.name, transition)
         menuItemNext?.title = resources.getString(R.string.finish)
 
@@ -51,6 +51,7 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
     override fun progress(running: Boolean) {
         findViewById(R.id.create_place_fragment).visibility = if (running) View.INVISIBLE else View.VISIBLE
         findViewById(R.id.progress_bar).visibility = if (running) View.VISIBLE else View.INVISIBLE
+        menuItemNext?.isEnabled = !running
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,7 +135,6 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
                     as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
                 presenter?.nameRetrieved(pickedPlace.name.toString())
                 presenter?.locationRetrieved(pickedPlace.latLng)
-
             }
         }
     }

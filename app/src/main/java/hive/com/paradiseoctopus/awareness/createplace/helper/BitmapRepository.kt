@@ -18,10 +18,13 @@ object BitmapRepository {
         Log.e("Overlay", "${bitmap.width} , ${bitmap.height}")
         val centerX : Int = bitmap.width / 2
         val centerY : Int = bitmap.height / 2
-        val cropped = Bitmap.createBitmap(bitmap, centerX - width / 2, centerY - height / 2, width, height)
-
-        bitmap.recycle()
-        return cropped
+        try {
+            val cropped = Bitmap.createBitmap(bitmap, centerX - width / 2, centerY - height / 2, width, height)
+            bitmap.recycle()
+            return cropped
+        } catch (ex : IllegalArgumentException) {
+            return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444) // FIXME:
+        }
     }
 
     fun saveBitmap(context : Context, bitmap: Bitmap) : String {
