@@ -49,10 +49,9 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
         currentState = new
         when (new) {
             State.PLACE_PICKER -> presenter.getCurrentLocation().subscribe{
-                location ->
-                presenter.view?.showPlaceChooser(transition, LatLng(location.latitude, location.longitude),
-                                presenter.place.name)
-                presenter.view?.progress(false)
+                    location -> presenter.view?.showPlaceChooser(transition, LatLng(location.latitude, location.longitude),
+                                    presenter.place.name)
+                        presenter.view?.progress(false)
             }
 
             State.DEVICE_PICKER -> presenter.getNearbyDevices().subscribe{

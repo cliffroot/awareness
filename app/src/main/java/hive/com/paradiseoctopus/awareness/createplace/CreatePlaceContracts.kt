@@ -36,6 +36,7 @@ interface CreatePlaceContracts {
         fun intervalsRetrieved(from : Pair<Int, Int>, to : Pair<Int, Int>)
 
         fun mapSnapshotRetrieved(bitmap : Bitmap)
+        fun hasPlaceImage(latitude : Double, longitude : Double) : Boolean
 
         fun restoreState()
         fun startCreation()

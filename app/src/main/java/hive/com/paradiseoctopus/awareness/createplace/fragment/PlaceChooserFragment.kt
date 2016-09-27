@@ -80,8 +80,10 @@ class PlaceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter? 
                 marker.showInfoWindow()
                 map.uiSettings.setAllGesturesEnabled(false)
 
-                Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe{
-                    map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
+                if (presenter?.hasPlaceImage(location?.latitude!!, location?.longitude!!) == false) {
+                    Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe {
+                        map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
+                    }
                 }
         }
 
@@ -95,8 +97,11 @@ class PlaceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter? 
                                 .title( if (place.name == null)
                                     resources.getString(R.string.new_marker) else place.name.toString()))
                         marker.showInfoWindow()
-                        Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe{
-                            map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
+
+                        if (presenter?.hasPlaceImage(place.latLng.latitude, place.latLng.longitude) == false) {
+                            Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe {
+                                map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
+                            }
                         }
                 }
         }

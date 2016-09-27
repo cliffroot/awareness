@@ -1,6 +1,7 @@
 package hive.com.paradiseoctopus.awareness.createplace
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -18,6 +19,7 @@ import hive.com.paradiseoctopus.awareness.createplace.fragment.DeviceChooserFrag
 import hive.com.paradiseoctopus.awareness.createplace.fragment.PLACE_PICKER_REQUEST
 import hive.com.paradiseoctopus.awareness.createplace.fragment.PlaceChooserFragment
 import hive.com.paradiseoctopus.awareness.createplace.helper.FragmentTranstion
+import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
 import rx.subjects.PublishSubject
 
 /**
@@ -133,8 +135,8 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
                 val pickedPlace : Place = PlacePicker.getPlace(this, data)
                 (supportFragmentManager.findFragmentById(R.id.create_place_fragment)
                     as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
-                presenter?.nameRetrieved(pickedPlace.name.toString())
                 presenter?.locationRetrieved(pickedPlace.latLng)
+                presenter?.nameRetrieved(pickedPlace.name.toString() + "@" + pickedPlace.id)
             }
         }
     }
@@ -148,6 +150,13 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
 
     override fun onBackPressed() {
         presenter?.back()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        PermissionUtility.permissionSubject.onNext(Pair(requestCode,
+                grantResults.all { res -> res == PackageManager.PERMISSION_GRANTED } ))
+        PermissionUtility.permissionSubject.onCompleted()
     }
 }
 

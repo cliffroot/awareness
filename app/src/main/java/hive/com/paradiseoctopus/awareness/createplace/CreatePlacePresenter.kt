@@ -13,6 +13,7 @@ import android.util.Log
 import com.google.android.gms.awareness.Awareness
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResultCallback
+import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.FirebaseDatabase
 import hive.com.paradiseoctopus.awareness.createplace.helper.BitmapRepository
@@ -37,7 +38,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     var wifiScanReceiver : WifiScanReceiver? = null
 
     val client: GoogleApiClient? by lazy {
-        GoogleApiClient.Builder(context).addApi(Awareness.API).build()
+        GoogleApiClient.Builder(context).addApi(Awareness.API).addApi(Places.GEO_DATA_API).build()
     }
 
     val stateHandler : UiStateHandler by lazy {
@@ -146,7 +147,17 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     }
 
     override fun nameRetrieved(name: String) {
-        place.name = name
+        place.name = name.split("@")[0]
+
+        if (name.split("@").size > 1) {
+            Places.GeoDataApi.getPlacePhotos(client, name.split("@")[1]).setResultCallback {
+                it.photoMetadata.take(1).map {
+                    metadata -> metadata.getScaledPhoto(client, 240, 240).setResultCallback {
+                        result -> place.pathToMap = BitmapRepository.saveBitmap(activity, result.bitmap, "${place.latitude};${place.longitude}")
+                    }
+                }
+            }
+        }
     }
 
     override fun deviceRetrieved(ssid: String) {
@@ -160,7 +171,12 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
 
     override fun mapSnapshotRetrieved(bitmap: Bitmap) {
         place.pathToMap = BitmapRepository.saveBitmap(context, BitmapRepository.cutBitmapCenter(
-                bitmap, UiUtils.dpToPx(context, 121), UiUtils.dpToPx(context, 121)))
+                bitmap, UiUtils.dpToPx(context, 121), UiUtils.dpToPx(context, 121)), "${place.latitude};${place.longitude}")
+    }
+
+    override fun hasPlaceImage(latitude : Double, longitude : Double): Boolean {
+        Log.e("Overlay", "hasPlaceImage $latitude;$longitude => ${BitmapRepository.imageExists(activity, "$latitude;$longitude")}")
+        return BitmapRepository.imageExists(activity, "$latitude;$longitude")
     }
 
     override fun dismiss() {

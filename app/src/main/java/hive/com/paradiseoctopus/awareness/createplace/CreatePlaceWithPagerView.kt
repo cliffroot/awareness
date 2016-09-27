@@ -1,6 +1,7 @@
 package hive.com.paradiseoctopus.awareness.createplace
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.wifi.ScanResult
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -16,6 +17,7 @@ import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.adapter.CreatePlaceViewPagerAdapter
 import hive.com.paradiseoctopus.awareness.createplace.fragment.*
 import hive.com.paradiseoctopus.awareness.createplace.helper.FragmentTranstion
+import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
 import rx.subjects.PublishSubject
 
 /**
@@ -152,8 +154,9 @@ class CreatePlaceWithPagerView : AppCompatActivity(), CreatePlaceContracts.Place
                 val pickedPlace : Place = PlacePicker.getPlace(this, data)
                 (supportFragmentManager.findFragmentByTag("android:switcher:${R.id.create_place_pager}:0")
                     as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
-                presenter?.nameRetrieved(pickedPlace.name.toString())
+
                 presenter?.locationRetrieved(pickedPlace.latLng)
+                presenter?.nameRetrieved(pickedPlace.name.toString() + "@" + pickedPlace.id)
             }
         }
     }
@@ -182,6 +185,13 @@ class CreatePlaceWithPagerView : AppCompatActivity(), CreatePlaceContracts.Place
 
     override fun onBackPressed() {
         presenter?.dismiss()
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+        PermissionUtility.permissionSubject.onNext(Pair(requestCode,
+                grantResults.all { res -> res == PackageManager.PERMISSION_GRANTED } ))
+        PermissionUtility.permissionSubject.onCompleted()
     }
 }
 
