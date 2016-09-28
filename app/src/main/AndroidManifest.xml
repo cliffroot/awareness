@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
 
     <application
         android:allowBackup="true"
@@ -20,13 +23,17 @@
         </activity>
 
         <activity android:name="hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView"/>
+        <activity android:name="hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView"/>
 
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
         <meta-data
+            android:name="com.google.android.awareness.API_KEY"
+            android:value="AIzaSyCIdt2m6t0p2zj08_UtrP5yYnaQy8FsCBE"/>
+        <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDjMUGWdwazz5zXO6XjH2Rao3l8IScD0-Q" />
+            android:value="AIzaSyCIdt2m6t0p2zj08_UtrP5yYnaQy8FsCBE"/>
 
     </application>
 </manifest>
