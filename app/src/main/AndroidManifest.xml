@@ -13,17 +13,32 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:name=".App"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name="hive.com.paradiseoctopus.awareness.MainActivity">
+
+        </activity>
+
+        <activity android:name="hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView"/>
+        <activity android:name=".createplace.CreatePlaceWithPagerView"/>
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+<<<<<<< HEAD
         <activity android:name="hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView"/>
         <activity android:name="hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView"/>
+=======
+        <activity android:name="com.facebook.FacebookActivity"
+            android:configChanges=
+                "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:label="@string/app_name" />
+>>>>>>> ea56d4d95f967a870ff489eaad4d5a1ccc7ade00
 
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
@@ -34,6 +49,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCIdt2m6t0p2zj08_UtrP5yYnaQy8FsCBE"/>
+
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
 
     </application>
 </manifest>
