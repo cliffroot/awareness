@@ -15,6 +15,7 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import hive.com.paradiseoctopus.awareness.createplace.helper.BitmapRepository
 import hive.com.paradiseoctopus.awareness.createplace.helper.UiStateHandler
@@ -175,7 +176,6 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     }
 
     override fun hasPlaceImage(latitude : Double, longitude : Double): Boolean {
-        Log.e("Overlay", "hasPlaceImage $latitude;$longitude => ${BitmapRepository.imageExists(activity, "$latitude;$longitude")}")
         return BitmapRepository.imageExists(activity, "$latitude;$longitude")
     }
 
@@ -198,7 +198,6 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
 
         if (stateHandler.currentState == UiStateHandler.State.FINISH) {
             saveModel()
-            Log.e("Overlay", "Model after creation: " + place)
             stateHandler.finish()
         }
     }
@@ -206,10 +205,10 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     fun saveModel() {
         place.timestamp = Calendar.getInstance().timeInMillis
         place.id = UUID.randomUUID().toString()
+        place.ownerId = FirebaseAuth.getInstance().currentUser?.uid!!
 
         val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("places").child(place.id)
-
+        val myRef = database.getReference("places").child(place.ownerId).child(place.id)
         myRef.setValue(place)
 
     }

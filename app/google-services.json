@@ -15,12 +15,24 @@
       },
       "oauth_client": [
         {
+          "client_id": "455509372645-rc7fr6qgo237tpoj0o9hog9atkqr1ahf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hive.com.paradiseoctopus.awareness",
+            "certificate_hash": "180411718058DD76FDEAECA476766288AA13E3DB"
+          }
+        },
+        {
           "client_id": "455509372645-mufikkm5v0co5u9bcvj6i10kvbnlh670.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "hive.com.paradiseoctopus.awareness",
             "certificate_hash": "23B2DA27C09B657C2431B8BA157167D030A7F398"
           }
+        },
+        {
+          "client_id": "455509372645-02hi1lk261f6v0ro8gvaaa8iubp714e1.apps.googleusercontent.com",
+          "client_type": 3
         },
         {
           "client_id": "455509372645-dg5h8fblaj43j5p6vevivnitd1vd4m0e.apps.googleusercontent.com",
@@ -40,7 +52,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "455509372645-dg5h8fblaj43j5p6vevivnitd1vd4m0e.apps.googleusercontent.com",
+              "client_id": "455509372645-02hi1lk261f6v0ro8gvaaa8iubp714e1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
