@@ -16,7 +16,7 @@ import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import hive.com.paradiseoctopus.awareness.App
 import hive.com.paradiseoctopus.awareness.createplace.helper.BitmapRepository
 import hive.com.paradiseoctopus.awareness.createplace.helper.UiStateHandler
 import hive.com.paradiseoctopus.awareness.createplace.helper.WifiScanReceiver
@@ -207,7 +207,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
         place.id = UUID.randomUUID().toString()
         place.ownerId = FirebaseAuth.getInstance().currentUser?.uid!!
 
-        val database = FirebaseDatabase.getInstance()
+        val database = (activity.applicationContext as App).firebaseDatabase
         val myRef = database.getReference("places").child(place.ownerId).child(place.id)
         myRef.setValue(place)
 

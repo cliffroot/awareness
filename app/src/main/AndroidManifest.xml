@@ -22,6 +22,19 @@
 
         <activity android:name="hive.com.paradiseoctopus.awareness.createplace.CreatePlaceView"/>
         <activity android:name=".createplace.CreatePlaceWithPagerView"/>
+        <activity android:name=".singleplace.ShowSinglePlaceView">
+            <intent-filter android:label="LABEL">
+
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <action android:name="android.intent.action.VIEW" />
+                <data
+                    android:scheme="https"
+                    android:host="awareness-281fa.firebaseapp.com"
+                    android:pathPrefix="/places"/>
+
+            </intent-filter>
+        </activity>
         <activity android:name=".login.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,7 +47,6 @@
                 "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name" />
 
-        <!-- android:theme="@android:style/Theme.Translucent.NoTitleBar" -->
 
         <meta-data android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

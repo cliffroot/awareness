@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import hive.com.paradiseoctopus.awareness.App
 import hive.com.paradiseoctopus.awareness.MainActivity
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.login.provider.FacebookProvider
@@ -23,7 +24,7 @@ class LoginActivity : AppCompatActivity(){
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mAuth = FirebaseAuth.getInstance()
+        mAuth = (applicationContext as App).firebaseAuth
         setContentView(R.layout.activity_login)
         setupAuthlistener()
     }

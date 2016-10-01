@@ -17,9 +17,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView
 import hive.com.paradiseoctopus.awareness.createplace.PlaceModel
+import hive.com.paradiseoctopus.awareness.singleplace.OWNER_UID_KEY
+import hive.com.paradiseoctopus.awareness.singleplace.PLACE_UID_KEY
+import hive.com.paradiseoctopus.awareness.singleplace.ShowSinglePlaceView
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
 import java.io.File
 
@@ -34,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         recycler.setHasFixedSize(true)
         recycler.layoutManager = LinearLayoutManager(this)
 
-        val database = FirebaseDatabase.getInstance()
+        val database = (applicationContext as App).firebaseDatabase
         val mRef = database.getReference("places").child(FirebaseAuth.getInstance().currentUser?.uid)
 
         mRef.addChildEventListener(object : ChildEventListener {
@@ -60,13 +62,26 @@ class MainActivity : AppCompatActivity() {
 
         })
 
-        val mAdapter =
-                object : FirebaseRecyclerAdapter<PlaceModel, PlaceViewHolder>
+        val mAdapter = object : FirebaseRecyclerAdapter<PlaceModel, PlaceViewHolder>
                 (PlaceModel::class.java, R.layout.place_row, PlaceViewHolder::class.java, mRef) {
-                    override fun populateViewHolder(chatMessageViewHolder: PlaceViewHolder, chatMessage: PlaceModel, position: Int) {
-                chatMessageViewHolder.setName(chatMessage.name)
-                chatMessageViewHolder.setText("${chatMessage.latitude} ; ${chatMessage.longitude}")
-                chatMessageViewHolder.setImage(this@MainActivity, chatMessage.pathToMap)
+                    override fun populateViewHolder(chatMessageViewHolder: PlaceViewHolder, place: PlaceModel, position: Int) {
+                        chatMessageViewHolder.setName(place.name)
+                        chatMessageViewHolder.setText("${place.latitude} ; ${place.longitude}")
+                        chatMessageViewHolder.setImage(this@MainActivity, place.pathToMap)
+                        chatMessageViewHolder.setupShareButton(this@MainActivity,
+                                "https://awareness-281fa.firebaseapp.com/places/${place.ownerId}/${place.id}")
+
+                        chatMessageViewHolder.mView.setOnClickListener { view ->
+                            startActivity({
+                               val i : Intent = Intent(this@MainActivity, ShowSinglePlaceView::class.java)
+                               val b : Bundle = Bundle()
+                               b.putString(PLACE_UID_KEY, place.id)
+                               b.putSerializable(OWNER_UID_KEY, place.ownerId)
+                               i.putExtras(b)
+                               i
+                            }())
+                        }
+
             }
         }
         recycler.adapter = mAdapter
@@ -89,6 +104,18 @@ class MainActivity : AppCompatActivity() {
         fun setImage (context: Context, path: String) {
             val imageView = mView.findViewById(R.id.place_bitmap) as ImageView
             Glide.with(context).load(File(context.applicationInfo.dataDir, path)).into(imageView)
+        }
+
+        fun setupShareButton(context : Context, url : String) {
+            val shareButton = mView.findViewById(R.id.share_button)
+
+            shareButton.setOnClickListener {
+                val shareBody = url
+                val sharingIntent = Intent(android.content.Intent.ACTION_SEND)
+                sharingIntent.type = "text/plain"
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody)
+                context.startActivity(Intent.createChooser(sharingIntent, "SHARE"))
+            }
         }
     }
 

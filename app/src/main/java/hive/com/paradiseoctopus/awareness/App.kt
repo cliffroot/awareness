@@ -2,6 +2,8 @@ package hive.com.paradiseoctopus.awareness
 
 import android.app.Application
 import com.facebook.FacebookSdk
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import hive.com.paradiseoctopus.awareness.login.provider.FacebookProvider
 
 /**
@@ -9,6 +11,14 @@ import hive.com.paradiseoctopus.awareness.login.provider.FacebookProvider
  */
 
 class App : Application() {
+
+    val firebaseAuth : FirebaseAuth by lazy {
+        FirebaseAuth.getInstance()
+    }
+
+    val firebaseDatabase : FirebaseDatabase by lazy {
+        FirebaseDatabase.getInstance()
+    }
 
     override fun onCreate() {
         super.onCreate()
