@@ -25,6 +25,7 @@ object BitmapRepository {
             bitmap.recycle()
             return cropped
         } catch (ex : IllegalArgumentException) {
+            Log.e("Overlay", "failed to create bitmap", ex)
             return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444)
         }
     }

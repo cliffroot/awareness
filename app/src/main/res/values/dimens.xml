@@ -7,7 +7,8 @@
     <dimen name="large_text">28sp</dimen>
     <dimen name="huge_text">44sp</dimen>
 
-    <dimen name="layout_padding">12sp</dimen>
+    <dimen name="layout_padding">12dp</dimen>
+    <dimen name="map_size">168dp</dimen>
 
     <dimen name="recycler_icon_size">48dp</dimen>
 </resources>

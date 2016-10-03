@@ -7,22 +7,19 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.ChildEventListener
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView
 import hive.com.paradiseoctopus.awareness.createplace.PlaceModel
 import hive.com.paradiseoctopus.awareness.singleplace.OWNER_UID_KEY
 import hive.com.paradiseoctopus.awareness.singleplace.PLACE_UID_KEY
 import hive.com.paradiseoctopus.awareness.singleplace.ShowSinglePlaceView
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
+import hive.com.paradiseoctopus.awareness.utils.SimpleDividerItemDecoration
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
@@ -36,37 +33,16 @@ class MainActivity : AppCompatActivity() {
         recycler.setHasFixedSize(true)
         recycler.layoutManager = LinearLayoutManager(this)
 
+        recycler.addItemDecoration(SimpleDividerItemDecoration(this))
+
         val database = (applicationContext as App).firebaseDatabase
         val mRef = database.getReference("places").child(FirebaseAuth.getInstance().currentUser?.uid)
-
-        mRef.addChildEventListener(object : ChildEventListener {
-            override fun onChildMoved(p0: DataSnapshot?, p1: String?) {
-
-            }
-
-            override fun onChildChanged(p0: DataSnapshot?, p1: String?) {
-                Log.e("Child changed", "p0: $p0, $p1")
-            }
-
-            override fun onChildAdded(p0: DataSnapshot?, p1: String?) {
-
-            }
-
-            override fun onChildRemoved(p0: DataSnapshot?) {
-
-            }
-
-            override fun onCancelled(p0: DatabaseError?) {
-
-            }
-
-        })
 
         val mAdapter = object : FirebaseRecyclerAdapter<PlaceModel, PlaceViewHolder>
                 (PlaceModel::class.java, R.layout.place_row, PlaceViewHolder::class.java, mRef) {
                     override fun populateViewHolder(chatMessageViewHolder: PlaceViewHolder, place: PlaceModel, position: Int) {
                         chatMessageViewHolder.setName(place.name)
-                        chatMessageViewHolder.setText("${place.latitude} ; ${place.longitude}")
+                        chatMessageViewHolder.setText("${place.code}")
                         chatMessageViewHolder.setImage(this@MainActivity, place.pathToMap)
                         chatMessageViewHolder.setupShareButton(this@MainActivity,
                                 "https://awareness-281fa.firebaseapp.com/places/${place.ownerId}/${place.id}")
@@ -97,7 +73,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun setText(text: String) {
-            val locationView = mView.findViewById(R.id.place_location) as TextView
+            val locationView = mView.findViewById(R.id.place_code) as TextView
             locationView.text = text
         }
 

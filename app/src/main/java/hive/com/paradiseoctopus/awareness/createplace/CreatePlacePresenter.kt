@@ -3,6 +3,7 @@ package hive.com.paradiseoctopus.awareness.createplace
 import android.content.Context
 import android.content.IntentFilter
 import android.graphics.Bitmap
+import android.location.Geocoder
 import android.net.wifi.ScanResult
 import android.net.wifi.WifiManager
 import android.os.Bundle
@@ -17,12 +18,13 @@ import com.google.android.gms.location.places.Places
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import hive.com.paradiseoctopus.awareness.App
+import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.helper.BitmapRepository
 import hive.com.paradiseoctopus.awareness.createplace.helper.UiStateHandler
 import hive.com.paradiseoctopus.awareness.createplace.helper.WifiScanReceiver
 import hive.com.paradiseoctopus.awareness.utils.PermissionUtility
-import hive.com.paradiseoctopus.awareness.utils.UiUtils
 import rx.Observable
+import rx.schedulers.Schedulers
 import rx.subjects.ReplaySubject
 import java.util.*
 
@@ -137,42 +139,85 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
 
     override fun onDetach() {
         super.onDetach()
-        if (wifiScanReceiver != null)
+        if (wifiScanReceiver != null) {
             context.unregisterReceiver(wifiScanReceiver)
+        }
         wifiScanReceiver = null
     }
 
-    override fun locationRetrieved(latLng: LatLng) {
-        place.latitude = latLng.latitude
-        place.longitude = latLng.longitude
+    override fun placeDetailsRetrieved(updated: Map<String, Any>) {
+
+        if (updated[latitudeField] != null && updated[longitudeField] != null) {
+            locationRetrieved(updated[latitudeField] as Double, updated[longitudeField] as Double, updated[nameField] as String?)
+        }
+
+        if (updated[nameField] != null) {
+            place.name = updated[nameField] as String
+        }
+
+        if (updated[placeIdField] != null) {
+            retrievePlaceImage(updated[placeIdField] as String)
+        }
+
+        if (updated[deviceField] != null) {
+            place.device = updated[deviceField] as String
+        }
+
+        if (updated[intervalFromField] != null && updated[intervalToField] != null) {
+            intervalsRetrieved(updated[intervalFromField] as Pair<Int, Int>, updated[intervalToField] as Pair<Int, Int>)
+        }
+
+        if (updated[mapSnapshotField] != null) {
+            mapSnapshotRetrieved(updated[mapSnapshotField] as Bitmap)
+        }
+
     }
 
-    override fun nameRetrieved(name: String) {
-        place.name = name.split("@")[0]
+    private fun locationRetrieved(latitude: Double, longitude: Double, name : String?) {
+        place.latitude = latitude
+        place.longitude = longitude
+        coordinatesToName(LatLng(place.latitude!!, place.longitude!!), name as String).subscribeOn(Schedulers.io()).subscribe(
+                {place.name = it}, {e -> Log.e("CreatePlace", "Geocoder failed", e)}
+        )
+    }
 
-        if (name.split("@").size > 1) {
-            Places.GeoDataApi.getPlacePhotos(client, name.split("@")[1]).setResultCallback {
+
+    private fun retrievePlaceImage(placeId : String) {
+        Places.GeoDataApi.getPlacePhotos(client, placeId).setResultCallback {
+            if (it.photoMetadata.count > 0)
                 it.photoMetadata.take(1).map {
-                    metadata -> metadata.getScaledPhoto(client, 240, 240).setResultCallback {
-                        result -> place.pathToMap = BitmapRepository.saveBitmap(activity, result.bitmap, "${place.latitude};${place.longitude}")
+                    metadata ->
+                    val size :Int = context.resources.getDimensionPixelSize(R.dimen.map_size)
+                    metadata.getScaledPhoto(client, size, size).setResultCallback {
+                        result -> place.pathToMap =
+                            BitmapRepository.saveBitmap(activity, result.bitmap, "${place.latitude};${place.longitude}")
                     }
                 }
-            }
         }
     }
 
-    override fun deviceRetrieved(ssid: String) {
-         place.device = ssid
+    override fun coordinatesToName(latLng: LatLng, default : String): Observable<String> {
+        return Observable.create ({
+            if (default.contains("°")) { // if it does not have an adequate name
+                val addresses = Geocoder(activity).getFromLocation(latLng.latitude, latLng.longitude, 1)
+                if (addresses.isEmpty()) it.onNext(default)
+                else it.onNext(addresses[0].getAddressLine(0))
+            } else {
+                it.onNext(default)
+            }
+            it.onCompleted()
+        })
     }
 
-    override fun intervalsRetrieved(from: Pair<Int, Int>, to: Pair<Int, Int>) {
+    private fun intervalsRetrieved(from: Pair<Int, Int>, to: Pair<Int, Int>) {
         place.intervalFrom = from.first * DateUtils.HOUR_IN_MILLIS + from.second * DateUtils.MINUTE_IN_MILLIS
         place.intervalTo = to.first * DateUtils.HOUR_IN_MILLIS + to.second * DateUtils.MINUTE_IN_MILLIS
     }
 
-    override fun mapSnapshotRetrieved(bitmap: Bitmap) {
+    private fun mapSnapshotRetrieved(bitmap: Bitmap) {
+        val size :Int = context.resources.getDimensionPixelSize(R.dimen.map_size)
         place.pathToMap = BitmapRepository.saveBitmap(context, BitmapRepository.cutBitmapCenter(
-                bitmap, UiUtils.dpToPx(context, 121), UiUtils.dpToPx(context, 121)), "${place.latitude};${place.longitude}")
+                bitmap, size, size), "${place.latitude};${place.longitude}")
     }
 
     override fun hasPlaceImage(latitude : Double, longitude : Double): Boolean {
@@ -189,7 +234,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
 
     fun generatePlaceCode(): String {
         val code : String = UUID.randomUUID().toString().substring(IntRange(0, 8))
-        place.code = code
+        place.code = code.filter { Character.isLetterOrDigit(it) }
         return code
     }
 

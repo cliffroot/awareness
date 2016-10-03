@@ -1,6 +1,5 @@
 package hive.com.paradiseoctopus.awareness.createplace
 
-import android.graphics.Bitmap
 import android.net.wifi.ScanResult
 import com.google.android.gms.maps.model.LatLng
 import hive.com.paradiseoctopus.awareness.createplace.helper.FragmentTranstion
@@ -30,13 +29,11 @@ interface CreatePlaceContracts {
         fun getCurrentLocation() : Observable<LatLng>
         fun getNearbyDevices() : Observable<List<ScanResult>>
 
-        fun locationRetrieved(latLng: LatLng)
-        fun nameRetrieved(name: String)
-        fun deviceRetrieved(ssid: String)
-        fun intervalsRetrieved(from : Pair<Int, Int>, to : Pair<Int, Int>)
+        fun placeDetailsRetrieved (updated : Map<String, Any>)
 
-        fun mapSnapshotRetrieved(bitmap : Bitmap)
+
         fun hasPlaceImage(latitude : Double, longitude : Double) : Boolean
+        fun coordinatesToName(latLng: LatLng, default : String) : Observable<String>
 
         fun restoreState()
         fun startCreation()
@@ -45,5 +42,13 @@ interface CreatePlaceContracts {
         fun back()
 
     }
-
 }
+
+val latitudeField = "latitude"
+val longitudeField = "longitude"
+val nameField = "name"
+val intervalFromField = "intervalFrom"
+val intervalToField = "intervalTo"
+val placeIdField = "placeId"
+val deviceField = "device"
+val mapSnapshotField = "mapSnapshot"

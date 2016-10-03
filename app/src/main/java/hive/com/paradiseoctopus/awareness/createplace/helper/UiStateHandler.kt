@@ -1,6 +1,9 @@
 package hive.com.paradiseoctopus.awareness.createplace.helper
 
+import android.support.v4.app.Fragment
+import android.text.TextUtils
 import com.google.android.gms.maps.model.LatLng
+import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlacePresenter
 import hive.com.paradiseoctopus.awareness.createplace.timeMillisToHoursMinutesPair
 import rx.subjects.PublishSubject
@@ -50,7 +53,8 @@ class UiStateHandler (val presenter: CreatePlacePresenter) {
         when (new) {
             State.PLACE_PICKER -> presenter.getCurrentLocation().subscribe{
                     location -> presenter.view?.showPlaceChooser(transition, LatLng(location.latitude, location.longitude),
-                                    presenter.place.name)
+                                    if (TextUtils.isEmpty(presenter.place.name))
+                                        (presenter as Fragment).resources.getString(R.string.my_location) else presenter.place.name)
                         presenter.view?.progress(false)
             }
 

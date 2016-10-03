@@ -3,7 +3,9 @@ package hive.com.paradiseoctopus.awareness.createplace.fragment
 import android.app.TimePickerDialog
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.text.Editable
 import android.text.SpannableStringBuilder
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +15,9 @@ import android.widget.EditText
 import android.widget.TextView
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceContracts
+import hive.com.paradiseoctopus.awareness.createplace.intervalFromField
+import hive.com.paradiseoctopus.awareness.createplace.intervalToField
+import hive.com.paradiseoctopus.awareness.createplace.nameField
 import rx.subjects.ReplaySubject
 import java.text.SimpleDateFormat
 
@@ -26,7 +31,7 @@ class AdditionalSettingsFragment(var presenter : CreatePlaceContracts.PlacePrese
                                  var selectedToTime   : Pair<Int, Int> = Pair(0,0)) : Fragment(), WithProgress {
 
     override fun progress(running: Boolean) {
-        // can do nothing, all data is available
+        // nothing to do, all data is available
     }
 
     var fromIntervalButton : Button? = null
@@ -55,11 +60,14 @@ class AdditionalSettingsFragment(var presenter : CreatePlaceContracts.PlacePrese
     fun load() : Fragment {
         readySubject.subscribe {
             placeNameView?.text = SpannableStringBuilder(foundName as String)
-            placeNameView?.setOnFocusChangeListener { view, hasFocus ->
-                if (!hasFocus) {
-                    presenter?.nameRetrieved((view as TextView).text.toString())
-                }
-            }
+            placeNameView?.addTextChangedListener(object : TextWatcher{
+                override fun afterTextChanged(s: Editable?) { presenter?.placeDetailsRetrieved(hashMapOf(nameField to s.toString()))}
+
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
+
+            })
 
             val intervalEnabled = selectedFromTime != selectedToTime
             with(intervalEnabled) {
@@ -112,7 +120,7 @@ class AdditionalSettingsFragment(var presenter : CreatePlaceContracts.PlacePrese
     }
 
     fun updateTime(from : Pair<Int, Int> , to : Pair <Int, Int>) {
-        presenter?.intervalsRetrieved(from, to)
+        presenter?.placeDetailsRetrieved(hashMapOf(intervalFromField to from, intervalToField to to))
     }
 
     fun time24to12 (hours : Int, minutes : Int) : String{

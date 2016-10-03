@@ -135,8 +135,10 @@ class CreatePlaceView : AppCompatActivity(), CreatePlaceContracts.PlaceView {
                 val pickedPlace : Place = PlacePicker.getPlace(this, data)
                 (supportFragmentManager.findFragmentById(R.id.create_place_fragment)
                     as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
-                presenter?.locationRetrieved(pickedPlace.latLng)
-                presenter?.nameRetrieved(pickedPlace.name.toString() + "@" + pickedPlace.id)
+                presenter?.placeDetailsRetrieved(hashMapOf(latitudeField to pickedPlace.latLng.latitude,
+                        longitudeField to pickedPlace.latLng.longitude,
+                        nameField to pickedPlace.name,
+                        placeIdField to pickedPlace.id))
             }
         }
     }

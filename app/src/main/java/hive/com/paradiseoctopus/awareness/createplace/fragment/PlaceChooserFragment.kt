@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceContracts
+import hive.com.paradiseoctopus.awareness.createplace.mapSnapshotField
 import rx.Observable
 import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
@@ -82,7 +83,7 @@ class PlaceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter? 
 
                 if (presenter?.hasPlaceImage(location?.latitude!!, location?.longitude!!) == false) {
                     Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe {
-                        map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
+                        map.snapshot { bitmap -> presenter?.placeDetailsRetrieved(hashMapOf(mapSnapshotField to bitmap)) }
                     }
                 }
         }
@@ -93,16 +94,26 @@ class PlaceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter? 
                     map ->
                         map.clear()
                         map.moveCamera (CameraUpdateFactory.newLatLngZoom(place.latLng, 13.5f))
-                        val marker : Marker = map.addMarker(MarkerOptions().position(place.latLng)
-                                .title( if (place.name == null)
-                                    resources.getString(R.string.new_marker) else place.name.toString()))
-                        marker.showInfoWindow()
+                        val marker : Marker = map.addMarker(MarkerOptions().position(place.latLng))
 
-                        if (presenter?.hasPlaceImage(place.latLng.latitude, place.latLng.longitude) == false) {
-                            Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe {
-                                map.snapshot { bitmap -> presenter?.mapSnapshotRetrieved(bitmap) }
+                        presenter?.coordinatesToName(place.latLng, place.name.toString())?.subscribe({
+                            marker.title = (it ?: resources.getString(R.string.new_marker))
+                            marker.showInfoWindow()
+
+                            if (presenter?.hasPlaceImage(place.latLng.latitude, place.latLng.longitude) == false) {
+                                Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe {
+                                    map.snapshot { bitmap -> presenter?.placeDetailsRetrieved(hashMapOf(mapSnapshotField to bitmap)) }
+                                }
                             }
-                        }
+                        }, {e ->
+                                marker.title = name
+                                marker.showInfoWindow()
+                                if (presenter?.hasPlaceImage(place.latLng.latitude, place.latLng.longitude) == false) {
+                                    Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe {
+                                        map.snapshot { bitmap -> presenter?.placeDetailsRetrieved(hashMapOf(mapSnapshotField to bitmap)) }
+                                    }
+                                }
+                        })
                 }
         }
     }

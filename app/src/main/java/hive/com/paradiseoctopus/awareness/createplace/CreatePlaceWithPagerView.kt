@@ -155,8 +155,10 @@ class CreatePlaceWithPagerView : AppCompatActivity(), CreatePlaceContracts.Place
                 (supportFragmentManager.findFragmentByTag("android:switcher:${R.id.create_place_pager}:0")
                     as PlaceChooserFragment).locationSubject.onNext(pickedPlace)
 
-                presenter?.locationRetrieved(pickedPlace.latLng)
-                presenter?.nameRetrieved(pickedPlace.name.toString() + "@" + pickedPlace.id)
+                presenter?.placeDetailsRetrieved(hashMapOf(latitudeField to pickedPlace.latLng.latitude,
+                                                           longitudeField to pickedPlace.latLng.longitude,
+                                                           nameField to pickedPlace.name,
+                                                           placeIdField to pickedPlace.id))
             }
         }
     }

@@ -1,42 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="?attr/selectableItemBackground"
     android:layout_height="wrap_content">
 
-
     <ImageView
-        android:layout_width="121dp"
-        android:layout_height="121dp"
+        android:layout_width="@dimen/map_size"
+        android:layout_height="@dimen/map_size"
         android:id="@+id/place_bitmap"
+        android:layout_margin="@dimen/layout_padding"
         android:contentDescription="Place location"
         android:layout_alignParentLeft="true"
-        />
+        android:scaleType="fitStart" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/large_text"
+        android:layout_marginTop="@dimen/layout_padding"
         android:text="Name"
         android:id="@+id/place_name"
+        android:textColor="@color/black"
         android:layout_toRightOf="@id/place_bitmap"
+        android:layout_toLeftOf="@+id/share_button"
         />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/medium_text"
-        android:text="Location"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/layout_padding"
+        android:text="XDEQES32"
         android:layout_toRightOf="@id/place_bitmap"
         android:layout_below="@id/place_name"
-        android:id="@+id/place_location"
+        android:id="@+id/place_code"
         />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
         android:src="@drawable/ic_share_black"
-        android:layout_margin="@dimen/layout_padding"
         android:id="@+id/share_button"
-        android:layout_alignParentRight="true"/>
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="10dp"
+        android:layout_alignTop="@+id/place_name"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp" />
 
 </RelativeLayout>

@@ -16,12 +16,11 @@ class App : Application() {
         FirebaseAuth.getInstance()
     }
 
-    val firebaseDatabase : FirebaseDatabase by lazy {
-        FirebaseDatabase.getInstance()
-    }
+    lateinit var firebaseDatabase : FirebaseDatabase
 
     override fun onCreate() {
         super.onCreate()
         FacebookSdk.sdkInitialize(applicationContext, FacebookProvider.FACEBOOK_REQUEST_CODE)
+        firebaseDatabase = FirebaseDatabase.getInstance()
     }
 }

@@ -13,6 +13,7 @@ import android.widget.ProgressBar
 import hive.com.paradiseoctopus.awareness.R
 import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceContracts
 import hive.com.paradiseoctopus.awareness.createplace.adapter.DevicesRecyclerAdapter
+import hive.com.paradiseoctopus.awareness.createplace.deviceField
 import rx.subjects.PublishSubject
 import rx.subjects.ReplaySubject
 
@@ -63,7 +64,8 @@ class DeviceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter?
 
         val filteredDevices = devices?.distinctBy {  device -> device.SSID }
         val observableSelectedDevice : PublishSubject<Int> = PublishSubject.create()
-        observableSelectedDevice.subscribe{ selected -> presenter?.deviceRetrieved(filteredDevices!![selected].SSID) }
+        observableSelectedDevice.subscribe{ selected -> presenter?.placeDetailsRetrieved(
+                hashMapOf(deviceField to filteredDevices!![selected].SSID)) }
 
         recyclerView?.adapter = DevicesRecyclerAdapter(context, filteredDevices!!, observableSelectedDevice,
                             filteredDevices.indexOfFirst { device -> device.SSID == selectedSsid })
