@@ -22,6 +22,7 @@ import com.google.firebase.database.ValueEventListener
 import hive.com.paradiseoctopus.awareness.App
 import hive.com.paradiseoctopus.awareness.MainActivity
 import hive.com.paradiseoctopus.awareness.R
+import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView
 import hive.com.paradiseoctopus.awareness.createplace.PlaceModel
 import hive.com.paradiseoctopus.awareness.singleplace.OWNER_UID_KEY
 import hive.com.paradiseoctopus.awareness.singleplace.PLACE_UID_KEY
@@ -40,12 +41,13 @@ class ShowPlacesView : ShowPlacesContracts.ShowPlaceView, Fragment() {
     val PRESENTER_TAG = "ShowPlacesPresenter"
     lateinit var presenter : ShowPlacesContracts.ShowPlacePresenter
     lateinit var recycler : RecyclerView
+    lateinit var addPlaceButton : View
 
     override fun displayPlaces(ref: DatabaseReference) {
         recycler.setHasFixedSize(true)
-        recycler.layoutManager = LinearLayoutManager(this)
+        recycler.layoutManager = LinearLayoutManager(context)
 
-        recycler.addItemDecoration(SimpleDividerItemDecoration(this))
+        recycler.addItemDecoration(SimpleDividerItemDecoration(context))
 
         val database = (context.applicationContext as App).firebaseDatabase
         val mRef = database.getReference("places").child(FirebaseAuth.getInstance().currentUser?.uid)
@@ -61,7 +63,7 @@ class ShowPlacesView : ShowPlacesContracts.ShowPlaceView, Fragment() {
 
                 chatMessageViewHolder.setupSubscribers(context, place)
 
-                chatMessageViewHolder.mView.setOnClickListener { view ->
+                chatMessageViewHolder.mView.setOnClickListener {
                     startActivity(Intent(context, ShowSinglePlaceView::class.java).apply {
                         putExtras(Bundle().apply{putString(PLACE_UID_KEY, place.id); putString(OWNER_UID_KEY, place.ownerId)})
                     })
@@ -70,25 +72,28 @@ class ShowPlacesView : ShowPlacesContracts.ShowPlaceView, Fragment() {
             }
         }
         recycler.adapter = mAdapter
+
+        addPlaceButton.setOnClickListener { startActivity(Intent(activity, CreatePlaceWithPagerView::class.java)) }
     }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val v : View? = inflater?.inflate(R.layout.single_place_fragment, container, false)
         recycler = v?.findViewById(R.id.created_places) as RecyclerView
+        addPlaceButton = v?.findViewById(R.id.add_place)!!
         return v
     }
 
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
-        if (activity.supportFragmentManager.findFragmentByTag(PRESENTER_TAG) == null) {
+        if (childFragmentManager.findFragmentByTag(PRESENTER_TAG) == null) {
             presenter = ShowPlacesPresenter(this)
-            activity.supportFragmentManager.beginTransaction()
+            childFragmentManager.beginTransaction()
                     .add(presenter as Fragment, PRESENTER_TAG)
                     .commitNow()
             presenter.start()
         } else {
-            presenter = activity.supportFragmentManager.findFragmentByTag(PRESENTER_TAG) as ShowPlacesContracts.ShowPlacePresenter
+            presenter = childFragmentManager.findFragmentByTag(PRESENTER_TAG) as ShowPlacesContracts.ShowPlacePresenter
             presenter.provideView(this)
             presenter.start()
         }

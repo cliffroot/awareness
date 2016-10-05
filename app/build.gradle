@@ -7,7 +7,7 @@ android {
         debug {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
-            storeFile file('/Users/cliffroot/.android/debug.keystore')
+            storeFile file('/home/cliffroot/debug.keystore')
             storePassword 'android'
         }
     }
@@ -31,8 +31,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.2.1'
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.google.firebase:firebase-core:9.4.0'
     compile 'com.firebaseui:firebase-ui-database:0.5.3'
     compile 'io.reactivex:rxjava:1.1.6'
