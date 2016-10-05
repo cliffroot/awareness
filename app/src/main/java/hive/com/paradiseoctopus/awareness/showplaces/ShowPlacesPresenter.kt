@@ -13,7 +13,7 @@ import hive.com.paradiseoctopus.awareness.App
 class ShowPlacesPresenter(var view : ShowPlacesView? = null) : ShowPlacesContracts.ShowPlacePresenter, Fragment() {
 
     override fun provideView(view: ShowPlacesContracts.ShowPlaceView) {
-        throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+        
     }
 
     override fun loadUserImage(imageView: ImageView) {
