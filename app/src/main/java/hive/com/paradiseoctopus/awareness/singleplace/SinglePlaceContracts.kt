@@ -2,6 +2,7 @@ package hive.com.paradiseoctopus.awareness.singleplace
 
 import android.content.Intent
 import hive.com.paradiseoctopus.awareness.createplace.PlaceModel
+import rx.Observable
 
 /**
  * Created by edanylenko on 9/29/16.
@@ -18,7 +19,7 @@ interface SinglePlaceContracts {
     }
 
     interface SinglePlacePresenter {
-        fun canSubscribe() : Boolean
+        fun canSubscribe() : Observable<Boolean>
         fun subscribe()
         fun start(intent : Intent)
         fun back()

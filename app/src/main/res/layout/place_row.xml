@@ -51,4 +51,12 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="16dp" />
 
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_alignBottom="@+id/place_bitmap"
+        android:layout_toRightOf="@+id/place_bitmap"
+        android:layout_toEndOf="@+id/place_bitmap"
+        android:id="@+id/place_subscribers"/>
+
 </RelativeLayout>

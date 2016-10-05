@@ -3,6 +3,7 @@ package hive.com.paradiseoctopus.awareness.singleplace
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -44,14 +45,16 @@ class ShowSinglePlaceView : AppCompatActivity(), SinglePlaceContracts.SinglePlac
         (findViewById(R.id.place_name) as TextView).text = place.name + " <~ " + place.timestamp
 
         val subscribeButton : Button = findViewById(R.id.subscribe_button) as Button
-        if (presenter?.canSubscribe() == true) {
-            subscribeButton.visibility = View.VISIBLE
-
-            subscribeButton.setOnClickListener {
-                // TODO : create a subscription>>>
+        presenter?.canSubscribe()?.subscribe {
+            Log.e("Overlay", "subscription status pushed")
+            if (it) {
+                subscribeButton.visibility = View.VISIBLE
+                subscribeButton.setOnClickListener {
+                    presenter?.subscribe()
+                }
+            } else {
+                subscribeButton.visibility = View.INVISIBLE
             }
-        } else {
-            subscribeButton.visibility = View.GONE
         }
     }
 

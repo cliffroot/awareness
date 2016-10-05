@@ -35,6 +35,11 @@
 
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".BackgroundDatabaseListenService"
+            android:exported="false"/>
+
         <activity android:name=".login.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
