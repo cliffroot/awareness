@@ -101,7 +101,7 @@ class CreatePlaceWithPagerView : AppCompatActivity(), CreatePlaceContracts.Place
         val f2 : Fragment? = supportFragmentManager.findFragmentByTag( "android:switcher:${R.id.create_place_pager}:1" )
         val f3 : Fragment? = supportFragmentManager.findFragmentByTag( "android:switcher:${R.id.create_place_pager}:2" )
 
-        if (f1 != null) placePickerFragment = f1 as PlaceChooserFragment
+        if (f1 != null) placePickerFragment =  f1 as PlaceChooserFragment
         if (f2 != null) devicePickerFragment = f2 as DeviceChooserFragment
         if (f3 != null) otherOptionsFragment = f3 as AdditionalSettingsFragment
 

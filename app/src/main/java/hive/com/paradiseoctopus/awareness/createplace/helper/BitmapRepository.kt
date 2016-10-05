@@ -13,6 +13,10 @@ import java.io.FileOutputStream
 object BitmapRepository {
 
     val SUFFIX : String = ".png"
+    val TAG = "BitmapRepository"
+
+    val PLACE_API_PREFIX = "p"
+    val MAP_SCREENSHOT_PREFIX = "m"
 
     var imageName : String? = null
 
@@ -25,23 +29,24 @@ object BitmapRepository {
             bitmap.recycle()
             return cropped
         } catch (ex : IllegalArgumentException) {
-            Log.e("Overlay", "failed to create bitmap", ex)
+            Log.e(TAG, "failed to create bitmap", ex)
+            bitmap.recycle()
             return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444)
         }
     }
 
-    fun saveBitmap(context : Context, bitmap: Bitmap, name : String) : String{
-        if (imageName != null) File(imageName).delete()
-        imageName = name + SUFFIX
+    fun saveBitmap(context : Context, bitmap: Bitmap, name : String, isPlaceApiImage : Boolean) : String{
+        if (imageName != null) File(imageName).apply { delete() }
+        imageName = (if (isPlaceApiImage) PLACE_API_PREFIX else MAP_SCREENSHOT_PREFIX) + name + SUFFIX
         val fileToSaveTo : File  = File(context.applicationInfo.dataDir, imageName)
         FileOutputStream(fileToSaveTo).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        Log.e("Overlay", "written to file ~> $fileToSaveTo ")
+        Log.e(TAG, "written to file ~> $fileToSaveTo ")
         return imageName!!
     }
 
     fun imageExists(context : Context, name : String) : Boolean {
-        Log.e("Overlay", "check if ${File(context.applicationInfo.dataDir, name + SUFFIX)} exists")
-        return File(context.applicationInfo.dataDir, name + SUFFIX).exists()
+        val nameToCheck = PLACE_API_PREFIX + name + SUFFIX
+        return File(context.applicationInfo.dataDir, nameToCheck).exists()
     }
 
 }

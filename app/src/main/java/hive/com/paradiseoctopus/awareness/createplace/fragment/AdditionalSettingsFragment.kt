@@ -20,6 +20,7 @@ import hive.com.paradiseoctopus.awareness.createplace.intervalToField
 import hive.com.paradiseoctopus.awareness.createplace.nameField
 import rx.subjects.ReplaySubject
 import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * Created by edanylenko on 9/21/16.
@@ -30,15 +31,11 @@ class AdditionalSettingsFragment(var presenter : CreatePlaceContracts.PlacePrese
                                  var selectedFromTime : Pair<Int, Int> = Pair(0,0),
                                  var selectedToTime   : Pair<Int, Int> = Pair(0,0)) : Fragment(), WithProgress {
 
-    override fun progress(running: Boolean) {
-        // nothing to do, all data is available
-    }
-
-    var fromIntervalButton : Button? = null
-    var toIntervalButton : Button? = null
-    var placeNameView : EditText? = null
-    var intervalsEnabledView : CheckBox? = null
-    var placeCodeView : TextView? = null
+    lateinit var fromIntervalButton : Button
+    lateinit var toIntervalButton : Button
+    lateinit var placeNameView : EditText
+    lateinit var intervalsEnabledView : CheckBox
+    lateinit var placeCodeView : TextView
 
     var readySubject : ReplaySubject<Boolean> = ReplaySubject.create()
 
@@ -59,8 +56,8 @@ class AdditionalSettingsFragment(var presenter : CreatePlaceContracts.PlacePrese
 
     fun load() : Fragment {
         readySubject.subscribe {
-            placeNameView?.text = SpannableStringBuilder(foundName as String)
-            placeNameView?.addTextChangedListener(object : TextWatcher{
+            placeNameView.text = SpannableStringBuilder(foundName as String)
+            placeNameView.addTextChangedListener(object : TextWatcher{
                 override fun afterTextChanged(s: Editable?) { presenter?.placeDetailsRetrieved(hashMapOf(nameField to s.toString()))}
 
                 override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) { }
@@ -70,65 +67,56 @@ class AdditionalSettingsFragment(var presenter : CreatePlaceContracts.PlacePrese
             })
 
             val intervalEnabled = selectedFromTime != selectedToTime
+
             with(intervalEnabled) {
-                fromIntervalButton?.isEnabled = this
-                toIntervalButton?.isEnabled = this
-                intervalsEnabledView?.isChecked = this
+                fromIntervalButton.isEnabled = this
+                toIntervalButton.isEnabled = this
+                intervalsEnabledView.isChecked = this
             }
 
 
-            intervalsEnabledView?.setOnCheckedChangeListener {
+            intervalsEnabledView.setOnCheckedChangeListener {
                 checkbox, selected ->
-                fromIntervalButton?.isEnabled = selected
-                toIntervalButton?.isEnabled = selected
+                fromIntervalButton.isEnabled = selected
+                toIntervalButton.isEnabled = selected
                 if (!selected) updateTime(Pair(0, 0), Pair(0, 0))
             }
 
-            placeCodeView?.text = deviceCode
-
-            setupFromPicker(fromIntervalButton!!)
-            setupToPicker(toIntervalButton!!)
+            placeCodeView.text = deviceCode
+            setupTimePicker(fromIntervalButton, { h, m -> selectedFromTime = h to m} )
+            setupTimePicker(toIntervalButton,   { h, m -> selectedToTime = h to m} )
         }
         return this
     }
 
-    fun setupFromPicker(button : Button) {
+    private fun setupTimePicker(button: Button, updateFunc : (Int, Int) -> Unit) {
         button.text = time24to12(selectedFromTime.first, selectedFromTime.second)
         button.setOnClickListener {
             view -> TimePickerDialog(context,
-                        TimePickerDialog.OnTimeSetListener {
-                            timePicker, hours, minutes ->
-                            button.text = time24to12(hours, minutes)
-                            selectedFromTime = Pair(hours, minutes)
-                            updateTime(selectedFromTime, selectedToTime)
-                        },
-                        selectedFromTime.first, selectedFromTime.second, false).show() // TODO : use 24h format to be moved to resources
+                TimePickerDialog.OnTimeSetListener {
+                    timePicker, hours, minutes ->
+                    button.text = time24to12(hours, minutes)
+                    updateFunc(hours, minutes)
+                    updateTime(selectedFromTime, selectedToTime)
+                },
+                selectedFromTime.first, selectedFromTime.second, resources.getBoolean(R.bool.use24hformat)).show()
         }
     }
 
-    fun setupToPicker (button : Button) {
-        button.text = time24to12(selectedToTime.first, selectedToTime.second)
-        button.setOnClickListener {
-            view -> TimePickerDialog(context,TimePickerDialog.OnTimeSetListener {
-                        timePicker, hours, minutes ->
-                        button.text = time24to12(hours, minutes)
-                        selectedToTime = Pair(hours, minutes)
-                        updateTime(selectedFromTime, selectedToTime)
-                    },
-                    selectedToTime.first, selectedToTime.second, false).show()
-        }
-    }
-
-    fun updateTime(from : Pair<Int, Int> , to : Pair <Int, Int>) {
+    private fun updateTime(from : Pair<Int, Int> , to : Pair <Int, Int>) {
         presenter?.placeDetailsRetrieved(hashMapOf(intervalFromField to from, intervalToField to to))
     }
 
-    fun time24to12 (hours : Int, minutes : Int) : String{
+    private fun time24to12 (hours : Int, minutes : Int) : String{
         val s = "$hours:$minutes:00"
-        val f1 = SimpleDateFormat("HH:mm:ss")
+        val f1 = SimpleDateFormat("HH:mm:ss", Locale.US)
         val d = f1.parse(s)
-        val f2 = SimpleDateFormat("h:mma")
+        val f2 = SimpleDateFormat("h:mma", Locale.US)
         return f2.format(d).toLowerCase()
+    }
+
+    override fun progress(running: Boolean) {
+        // nothing to do, all data is available
     }
 
 }

@@ -23,16 +23,8 @@ import rx.subjects.ReplaySubject
 
 class DeviceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter? = null,
                             var devices: List<ScanResult>? = null, var selectedSsid: String? = null) : Fragment(), WithProgress {
-
-    override fun progress(running: Boolean) {
-        readySubject.subscribe {
-            progressBar?.visibility = if (running) View.VISIBLE else View.GONE
-            recyclerView?.visibility = if (!running) View.VISIBLE else View.INVISIBLE
-        }
-    }
-
-    var recyclerView : RecyclerView? = null
-    var progressBar : ProgressBar? = null
+    lateinit var recyclerView : RecyclerView
+    lateinit var progressBar : ProgressBar
 
     var readySubject : ReplaySubject<Boolean> = ReplaySubject.create()
 
@@ -58,18 +50,25 @@ class DeviceChooserFragment(var presenter : CreatePlaceContracts.PlacePresenter?
     fun setupDevicesView() {
 
         val layoutManager : LinearLayoutManager = LinearLayoutManager(context)
-        recyclerView?.layoutManager = layoutManager
+        recyclerView.layoutManager = layoutManager
         val itemAnimator : RecyclerView.ItemAnimator = DefaultItemAnimator()
-        recyclerView?.itemAnimator = itemAnimator
+        recyclerView.itemAnimator = itemAnimator
 
         val filteredDevices = devices?.distinctBy {  device -> device.SSID }
         val observableSelectedDevice : PublishSubject<Int> = PublishSubject.create()
         observableSelectedDevice.subscribe{ selected -> presenter?.placeDetailsRetrieved(
                 hashMapOf(deviceField to filteredDevices!![selected].SSID)) }
 
-        recyclerView?.adapter = DevicesRecyclerAdapter(context, filteredDevices!!, observableSelectedDevice,
+        recyclerView.adapter = DevicesRecyclerAdapter(context, filteredDevices!!, observableSelectedDevice,
                             filteredDevices.indexOfFirst { device -> device.SSID == selectedSsid })
 
+    }
+
+    override fun progress(running: Boolean) {
+        readySubject.subscribe {
+            progressBar.visibility = if (running) View.VISIBLE else View.GONE
+            recyclerView.visibility = if (!running) View.VISIBLE else View.INVISIBLE
+        }
     }
 
 }

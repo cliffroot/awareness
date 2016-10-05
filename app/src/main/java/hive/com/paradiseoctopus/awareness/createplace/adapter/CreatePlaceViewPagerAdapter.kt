@@ -3,7 +3,6 @@ package hive.com.paradiseoctopus.awareness.createplace.adapter
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import android.support.v4.view.PagerAdapter
 
 /**
  * Created by edanylenko on 9/26/16.
@@ -30,10 +29,6 @@ class CreatePlaceViewPagerAdapter(fragmentManager: FragmentManager,
 
     override fun getCount(): Int {
         return NUM_OF_FRAGMENTS
-    }
-
-    override fun getItemPosition(`object`: Any?): Int {
-        return PagerAdapter.POSITION_NONE
     }
 
 }

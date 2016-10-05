@@ -11,9 +11,12 @@ import android.os.IBinder
 import android.support.v7.app.NotificationCompat
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.FirebaseDatabase
 import hive.com.paradiseoctopus.awareness.singleplace.ShowSinglePlaceView
 import hive.com.paradiseoctopus.awareness.singleplace.SubscriptionModel
+import hive.com.paradiseoctopus.awareness.utils.BaseChildEventListener
+import hive.com.paradiseoctopus.awareness.utils.BaseValueEventListener
 import rx.Observable
 import rx.schedulers.Schedulers
 
@@ -24,6 +27,7 @@ import rx.schedulers.Schedulers
 class BackgroundDatabaseListenService(val name : String = "notificationService") : Service() {
 
     val PENDING_INTENT_CODE = 119
+    val NOTIFICATION_CODE = 2001
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -39,55 +43,60 @@ class BackgroundDatabaseListenService(val name : String = "notificationService")
 
         val database : FirebaseDatabase = (applicationContext as App).firebaseDatabase
         val auth : FirebaseAuth = (applicationContext as App).firebaseAuth
+        val ref = database.getReference("subscriptions").child(auth.currentUser?.uid) // TODO: referencing by non-constant string
 
-        val ref = database.getReference("subscriptions").child(auth.currentUser?.uid)
-
-        ref.addValueEventListener(object : ValueEventListener{
-            override fun onCancelled(p0: DatabaseError?) { }
-
+        ref.addValueEventListener(object : BaseValueEventListener() {
             override fun onDataChange(p0: DataSnapshot?) {
                 p0?.children?.map {
-                    child ->
-                        child.ref.addChildEventListener(object : ChildEventListener {
-                    override fun onChildMoved(p0: DataSnapshot?, p1: String?) { }
-                    override fun onChildChanged(p0: DataSnapshot?, p1: String?) { }
-                    override fun onChildAdded(p0: DataSnapshot?, p1: String?) { // a new subscription added
-                        val model = (p0?.getValue(SubscriptionModel::class.java) as SubscriptionModel)
-                        loadUserImage(model.subscriberPhotoUrl).subscribe {
-                            bitmap -> val mBuilder =
-                                NotificationCompat.Builder(this@BackgroundDatabaseListenService)
-                                        .setLargeIcon(bitmap)
-                                        .setSmallIcon(R.drawable.ic_add_white)
-                                        .setContentTitle("New subscription request!") // TODO: string resources
-                                        .setContentText("User ${model.subscriberName}  wants to subscribe to one of your places")
-                                        .setPriority(NotificationCompat.PRIORITY_HIGH).setOnlyAlertOnce(false)
-                                        .setContentIntent(generatePendingIntent(model.ownerUserId, model.placeId))
-                            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                            mNotificationManager.notify(2001, mBuilder.build())
+                    child -> child.ref.addChildEventListener(object : BaseChildEventListener() {
+                        override fun onChildAdded(p0: DataSnapshot?, p1: String?) { // a new subscription added
+                            val model = (p0?.getValue(SubscriptionModel::class.java) as SubscriptionModel)
+                            loadUserImage(model.subscriberPhotoUrl).subscribe {
+                                bitmap -> showNotification(model, bitmap)
+                            }
                         }
-                    }
-                    override fun onChildRemoved(p0: DataSnapshot?) { }
-                    override fun onCancelled(p0: DatabaseError?) { }
-                    private fun  generatePendingIntent(ownerId : String, placeId : String): PendingIntent? {
-                        val intnt : Intent = Intent(this@BackgroundDatabaseListenService, ShowSinglePlaceView::class.java)
-                        intnt.data = Uri.parse("https://awareness-281fa.firebaseapp.com/places/$ownerId/$placeId")
-                        val pendingIntent : PendingIntent = PendingIntent.getActivity(
-                                this@BackgroundDatabaseListenService,
-                                PENDING_INTENT_CODE,
-                                intnt, PendingIntent.FLAG_CANCEL_CURRENT)
-                        return pendingIntent
-                    }
                     })
                 }
             }
         })
     }
 
+    private fun showNotification (model : SubscriptionModel, bitmap : Bitmap) {
+        val mBuilder =
+                NotificationCompat.Builder(this@BackgroundDatabaseListenService)
+                        .setLargeIcon(bitmap)
+                        .setSmallIcon(R.drawable.ic_add_white)
+                        .setContentTitle(this@BackgroundDatabaseListenService.resources.getString(R.string.subscription_request))
+                        .setContentText(String.format(
+                                this@BackgroundDatabaseListenService.resources.getString(R.string.user_subscribed_to_your_places),
+                                model.subscriberName
+                        ))
+                        .setPriority(NotificationCompat.PRIORITY_HIGH).setOnlyAlertOnce(false)
+                        .setContentIntent(generatePendingIntent(model.ownerUserId, model.placeId))
+        val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        mNotificationManager.notify(NOTIFICATION_CODE, mBuilder.build())
+    }
+
+    private fun  generatePendingIntent(ownerId : String, placeId : String): PendingIntent? {
+        val intent : Intent = Intent(this, ShowSinglePlaceView::class.java)
+        intent.data = Uri.parse("${resources.getString(R.string.API_PATH)}$ownerId/$placeId")
+        val pendingIntent : PendingIntent = PendingIntent.getActivity(
+                this,
+                PENDING_INTENT_CODE,
+                intent, PendingIntent.FLAG_CANCEL_CURRENT)
+        return pendingIntent
+    }
+
     private fun loadUserImage (imageUrl : String) : Observable<Bitmap> {
         return Observable.create<Bitmap> {
-            val theBitmap = Glide.with(this@BackgroundDatabaseListenService).load(imageUrl).asBitmap().into(128, 128).get()
-            it.onNext(theBitmap)
-            it.onCompleted()
+            try {
+                val theBitmap = Glide.with(this@BackgroundDatabaseListenService).load(imageUrl).asBitmap().into(128, 128).get()
+                it.onNext(theBitmap)
+                it.onCompleted()
+            } catch (e : Exception) {
+                //it.onNext() TODO :// show something
+                it.onCompleted()
+            }
         }.subscribeOn(Schedulers.computation())
     }
 

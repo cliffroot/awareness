@@ -1,5 +1,6 @@
 package hive.com.paradiseoctopus.awareness.showplaces
 
+import android.widget.ImageView
 import com.google.firebase.database.DatabaseReference
 
 /**
@@ -11,5 +12,11 @@ interface ShowPlacesContracts {
 
     interface ShowPlaceView {
         fun displayPlaces (ref : DatabaseReference)
+    }
+
+    interface ShowPlacePresenter {
+        fun loadUserImage(imageView : ImageView)
+        fun start()
+        fun provideView (view : ShowPlaceView)
     }
 }

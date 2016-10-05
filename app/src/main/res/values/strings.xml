@@ -24,4 +24,8 @@
     <string name="no">No</string>
 
     <string name="finish">Finish</string>
+    <string name="subscription_request">New subscription request!</string>
+    <string name="user_subscribed_to_your_places">User %1$s just subscribed to one of your places</string>
+
+    <string name="API_PATH">https://awareness-281fa.firebaseapp.com/places/</string>
 </resources>

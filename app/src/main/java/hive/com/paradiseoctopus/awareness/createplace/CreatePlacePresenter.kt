@@ -190,7 +190,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
                     val size :Int = context.resources.getDimensionPixelSize(R.dimen.map_size)
                     metadata.getScaledPhoto(client, size, size).setResultCallback {
                         result -> place.pathToMap =
-                            BitmapRepository.saveBitmap(activity, result.bitmap, "${place.latitude};${place.longitude}")
+                            BitmapRepository.saveBitmap(activity, result.bitmap, "${place.timestamp}", true)
                     }
                 }
         }
@@ -217,7 +217,7 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
     private fun mapSnapshotRetrieved(bitmap: Bitmap) {
         val size :Int = context.resources.getDimensionPixelSize(R.dimen.map_size)
         place.pathToMap = BitmapRepository.saveBitmap(context, BitmapRepository.cutBitmapCenter(
-                bitmap, size, size), "${place.latitude};${place.longitude}")
+                bitmap, size, size), "${place.timestamp}", false)
     }
 
     override fun hasPlaceImage(latitude : Double, longitude : Double): Boolean {
