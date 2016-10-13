@@ -1,9 +1,7 @@
 package hive.com.paradiseoctopus.awareness
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import hive.com.paradiseoctopus.awareness.createplace.CreatePlaceWithPagerView
 import hive.com.paradiseoctopus.awareness.showplaces.ShowPlacesView
 
 class MainActivity : AppCompatActivity() {
@@ -15,7 +13,6 @@ class MainActivity : AppCompatActivity() {
 
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, ShowPlacesView()).commitNow()
 
-        startService(Intent(this, BackgroundDatabaseListenService::class.java))
     }
 
 
