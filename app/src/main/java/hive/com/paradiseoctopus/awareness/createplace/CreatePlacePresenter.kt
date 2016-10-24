@@ -187,10 +187,9 @@ class CreatePlacePresenter(var view : CreatePlaceContracts.PlaceView?) : Fragmen
             if (it.photoMetadata.count > 0)
                 it.photoMetadata.take(1).map {
                     metadata ->
-                    val size :Int = context.resources.getDimensionPixelSize(R.dimen.map_size)
+                    val size : Int = context.resources.getDimensionPixelSize(R.dimen.map_size)
                     metadata.getScaledPhoto(client, size, size).setResultCallback {
-                        result -> place.pathToMap =
-                            BitmapRepository.saveBitmap(activity, result.bitmap, "${place.timestamp}", true)
+                        result -> place.pathToMap = BitmapRepository.saveBitmap(activity, result.bitmap, "${place.timestamp}", true)
                     }
                 }
         }

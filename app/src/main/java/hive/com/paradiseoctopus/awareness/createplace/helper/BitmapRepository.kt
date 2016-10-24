@@ -12,11 +12,11 @@ import java.io.FileOutputStream
 
 object BitmapRepository {
 
+    val PLACE_PREFIX = "place."
+    val MAP_PREFIX = "map."
+
     val SUFFIX : String = ".png"
     val TAG = "BitmapRepository"
-
-    val PLACE_API_PREFIX = "p"
-    val MAP_SCREENSHOT_PREFIX = "m"
 
     var imageName : String? = null
 
@@ -35,18 +35,25 @@ object BitmapRepository {
         }
     }
 
-    fun saveBitmap(context : Context, bitmap: Bitmap, name : String, isPlaceApiImage : Boolean) : String{
+    fun saveBitmap(context : Context, bitmap: Bitmap, name : String, fromPlaceApi : Boolean) : String {
         if (imageName != null) File(imageName).apply { delete() }
-        imageName = (if (isPlaceApiImage) PLACE_API_PREFIX else MAP_SCREENSHOT_PREFIX) + name + SUFFIX
-        val fileToSaveTo : File  = File(context.applicationInfo.dataDir, imageName)
-        FileOutputStream(fileToSaveTo).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        Log.e(TAG, "written to file ~> $fileToSaveTo ")
-        return imageName!!
+        imageName = (if (fromPlaceApi) PLACE_PREFIX else MAP_PREFIX) + name + SUFFIX
+        if (!placeImageExists(context, name)) {
+            val fileToSaveTo: File = File(context.applicationInfo.dataDir, imageName)
+            FileOutputStream(fileToSaveTo).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            Log.e(TAG, "written to file ~> $fileToSaveTo ")
+            return imageName!!
+        } else {
+            return PLACE_PREFIX + name + SUFFIX
+        }
+    }
+
+    fun placeImageExists (context : Context, name : String) : Boolean {
+        return File(context.applicationInfo.dataDir, PLACE_PREFIX + name + SUFFIX).exists()
     }
 
     fun imageExists(context : Context, name : String) : Boolean {
-        val nameToCheck = PLACE_API_PREFIX + name + SUFFIX
-        return File(context.applicationInfo.dataDir, nameToCheck).exists()
+        return listOf(PLACE_PREFIX, MAP_PREFIX).map { File(context.applicationInfo.dataDir, it + name + SUFFIX).exists() }.any { it == true }
     }
 
 }
